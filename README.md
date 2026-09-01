@@ -280,9 +280,10 @@ client would create two sources of truth that drift apart.
 
 ## The interface
 
-A dark desktop console: near-black canvas, dark rounded surfaces, hairline rules, a
-single lime accent, fixed left sidebar, pill tabs and dense tables. Built for someone
-processing a queue, not admiring a dashboard.
+A calm, light enterprise console: white surfaces, neutral slate text, hairline
+borders, restrained shadows, one muted blue accent. Fixed left sidebar, underlined
+tabs, dense tables. Built for someone processing a queue for hours, not admiring a
+dashboard for thirty seconds.
 
 **Screens and routes**
 
@@ -300,15 +301,24 @@ processing a queue, not admiring a dashboard.
 
 **Design rules held throughout**
 
-- **Two colour families, each with one job.** Lime is brand, interactive and
-  affirmative — active nav, primary buttons, focus rings, clean/resolved states.
-  Red/amber/blue signal *attention*, and nothing else in the product is ever red, so
-  a red cell is never ambiguous.
-- **Live work is louder than finished work.** In Progress uses filled lime; Resolved
-  uses a tinted lime. Without that split the two statuses render identically — the
-  system needed a fourth tone, not a reused one.
-- **34px rows, 13px type**, on an 8px grid. Metric tiles exist but are deliberately
-  small; nav badges and tab counts carry most of the numbers.
+- **Verified contrast, not assumed contrast.** Every text/background pair in the
+  system was checked against WCAG AA — 24 pairs, all passing (body text 16.9:1,
+  secondary 6.2:1, the dimmest tertiary 4.9:1). Control borders clear the 3:1
+  non-text threshold, because a white input on a near-white page has no fill
+  contrast and the border is the only thing identifying it.
+- **Meaning is never carried by colour alone.** Severity always ships with a word or
+  letter (`CRITICAL`, `2C 1W`); the coloured row gutter is redundant with the
+  Severity column, never the sole signal. Active nav uses tint *plus* weight *plus*
+  an edge marker. In Progress and Resolved differ by a filled vs hollow dot as well
+  as by hue.
+- **One accent, used sparingly.** Muted blue marks what is interactive or selected.
+  Red/amber/blue-tinted surfaces mean data quality. Nothing glows or saturates — in
+  a tool someone stares at all day, visual noise costs attention that belongs on the
+  data.
+- **36px rows, 13px table type**, on an 8px grid, with a compact/comfortable toggle
+  in Settings. Metric tiles exist but are deliberately small; nav badges and tab
+  counts carry most of the numbers.
+- Honours `prefers-reduced-motion`.
 - **Risk-first by default** — the queue sorts by critical-flag count descending.
 - **Missing dates render as `missing` in red.** An absent effective date is a finding,
   not an empty cell.

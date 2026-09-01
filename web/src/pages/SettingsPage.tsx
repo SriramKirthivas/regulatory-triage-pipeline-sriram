@@ -51,7 +51,7 @@ export function SettingsPage() {
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--row-h",
-      prefs.density === "compact" ? "34px" : "42px",
+      prefs.density === "compact" ? "32px" : "44px",
     );
   }, [prefs.density]);
 
@@ -114,8 +114,8 @@ export function SettingsPage() {
                       save({ density: e.target.value as "compact" | "comfortable" })
                     }
                   >
-                    <option value="compact">Compact — 34px rows</option>
-                    <option value="comfortable">Comfortable — 42px rows</option>
+                    <option value="compact">Compact — 32px rows</option>
+                    <option value="comfortable">Comfortable — 44px rows</option>
                   </select>
                 </div>
                 <label className="row" style={{ cursor: "pointer" }}>

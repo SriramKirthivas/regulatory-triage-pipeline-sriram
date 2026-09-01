@@ -60,8 +60,8 @@ export function Sidebar() {
       <div className="sidebar-brand">
         <div className="sidebar-mark">A</div>
         <div className="sidebar-brand-text">
-          <span>Artixio</span>
-          <strong>Regulatory Intelligence</strong>
+          <strong>Artixio</strong>
+          <span>Regulatory Intelligence</span>
         </div>
       </div>
 
