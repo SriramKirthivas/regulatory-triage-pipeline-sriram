@@ -176,6 +176,13 @@ steps.
 
 ## The messy data
 
+**Every record is fabricated.** Nothing was scraped, downloaded, or derived from a
+real regulatory source. The authorities are real bodies and the documents are written
+to be plausible — reference-code formats, therapeutic areas and document types follow
+real conventions — but the directives themselves, their reference codes and their
+`example/` URLs are invented for this exercise. The domain realism is deliberate; the
+data is not real, and no part of it should be treated as regulatory guidance.
+
 Nothing here is pre-cleaned. `api/app/seed/raw_data.py` holds the raw feed with
 deliberate defects; the seeder pushes it through **the same normalisation functions
 the API would use for live ingestion** (`api/app/normalize.py`). The `_defect`
