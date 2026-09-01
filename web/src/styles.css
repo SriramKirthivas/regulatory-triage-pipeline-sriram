@@ -1,86 +1,100 @@
 /*
  * Artixio Regulatory Intelligence — design system
  *
- * Visual language: a calm, light enterprise console. White surfaces, neutral slate
- * text, hairline borders, restrained shadows, one muted blue accent.
+ * Visual language: warm cream canvas, softly rounded white surfaces, pill-shaped
+ * navigation and controls, deep navy as the action colour, blush and powder tints
+ * for state, and large confident display headings.
  *
- * Legibility rules, held throughout:
- *   - Every text/background pair meets WCAG AA (4.5:1 body, 3:1 large text and UI
- *     boundaries). The semantic ramps below are chosen for that, not for vibrancy.
- *   - Meaning is never carried by colour alone. Severity always ships with a word
- *     or letter ("CRITICAL", "2C 1W"); the coloured row gutter is redundant with
- *     the Severity column, never the only signal.
- *   - Nothing glows, pulses or saturates. In a compliance tool, visual noise costs
- *     attention that belongs on the data.
+ * Adapted from a soft-editorial reference. What carried over: the palette, the
+ * pill navigation, the navy pill buttons, the generous corner radii, the display
+ * type. What did not: the airy marketing layout — this is a triage console, so
+ * rows stay compact and the working set stays on screen.
  *
- * Density is still a requirement: 36px rows, 13px table type, 8px grid — readable
- * without becoming a spacious marketing dashboard.
+ * Rules held throughout:
+ *   - NAVY is action and selection. Blush is the resting surface for navigation.
+ *   - Red / amber / slate-blue are reserved for data-quality severity. Nothing
+ *     else in the product is red, so a red cell is never ambiguous.
+ *   - Meaning is never carried by colour alone — severity always ships with a word
+ *     or letter, and the row gutter is redundant with the Severity column.
+ *   - Every text/background pair clears WCAG AA.
  */
 
 :root {
-  /* Accent — muted professional blue */
-  --blue-50: #eff5fb;
-  --blue-100: #dbe8f5;
-  --blue-200: #bcd4ea;
-  --blue-300: #8fb6da;
-  --blue-500: #3574ab;
-  --blue-600: #2a5f8f;
-  --blue-700: #234e75;
-  --blue-800: #1c3d5c;
+  /* Navy — action, selection, emphasis */
+  --navy-50: #f0eef7;
+  --navy-100: #ddd8ee;
+  --navy-200: #bfb6dd;
+  --navy-500: #4a3690;
+  --navy-600: #382572;
+  --navy-700: #2b1b6b;
+  --navy-800: #211450;
 
-  /* Neutrals — slate */
-  --grey-0: #ffffff;
-  --grey-25: #fcfcfd;
-  --grey-50: #f7f8fa;
-  --grey-100: #f0f2f5;
-  --grey-200: #e5e8ec;
-  --grey-300: #d3d8df;
-  --grey-400: #a8b0bb;
-  --grey-500: #646d7a;
-  --grey-600: #5a6270;
-  --grey-700: #414855;
-  --grey-800: #2b313b;
-  --grey-900: #1a1d23;
+  /* Blush — navigation surface, warm accents */
+  --blush-50: #fdf1ec;
+  --blush-100: #fbe2d9;
+  --blush-200: #f7cec0;
+  --blush-300: #f0b3a0;
+  --blush-600: #9c4f38;
 
-  /* Semantic ramps. Foreground values all clear 4.5:1 on white and on their own
-     tinted background. */
-  --critical: #b42318;
-  --critical-bg: #fef3f2;
-  --critical-border: #fecdc9;
-  --warning: #b54708;
-  --warning-bg: #fffaeb;
-  --warning-border: #fedf89;
-  --info: #175cd3;
-  --info-bg: #eff8ff;
-  --info-border: #b2ddff;
-  --success: #067647;
-  --success-bg: #ecfdf3;
-  --success-border: #abefc6;
+  /* Powder — secondary tint */
+  --powder-50: #eef3f8;
+  --powder-100: #dde7f1;
+  --powder-200: #c3d5e6;
+
+  /* Warm neutrals */
+  --cream: #fdfaf7;
+  --cream-100: #f8f3ee;
+  --paper: #ffffff;
+
+  --warm-100: #f4efea;
+  --warm-200: #e9e1da;
+  --warm-300: #d8cec5;
+  --warm-500: #857a72;
+
+  --ink: #1f1b2e;
+  --ink-muted: #575167;
+  --ink-faint: #6b6479;
+
+  /* Severity — data quality only */
+  --critical: #b3261e;
+  --critical-bg: #fdf0ee;
+  --critical-border: #f3ccc5;
+  --warning: #97530a;
+  --warning-bg: #fdf5e8;
+  --warning-border: #f0dcb6;
+  --info: #2f5578;
+  --info-bg: #eef3f8;
+  --info-border: #c3d5e6;
+  --success: #12694a;
+  --success-bg: #ecf6f1;
+  --success-border: #bde0d0;
 
   /* Surfaces */
-  --bg: var(--grey-50);
-  --surface: var(--grey-0);
-  --surface-2: var(--grey-50);
-  --surface-3: var(--grey-100);
+  --bg: var(--cream);
+  --surface: var(--paper);
+  --surface-2: var(--cream-100);
+  --surface-3: var(--warm-100);
 
-  --line: var(--grey-200);
-  --line-soft: var(--grey-100);
-  /* Control borders must clear 3:1 (WCAG 1.4.11): a white input on a near-white
-     page has no fill contrast, so the border is the only thing identifying it. */
-  --line-strong: #848f9d;
+  --line: var(--warm-200);
+  --line-soft: var(--warm-100);
+  /* Control borders clear 3:1 (WCAG 1.4.11): a white input on a cream page has
+     almost no fill contrast, so the border is the only thing identifying it. */
+  --line-strong: #948880;
 
-  --text: var(--grey-900);
-  --text-muted: var(--grey-600);
-  --text-faint: var(--grey-500);
+  --text: var(--ink);
+  --text-muted: var(--ink-muted);
+  --text-faint: var(--ink-faint);
 
-  --radius-lg: 10px;
-  --radius: 8px;
-  --radius-sm: 6px;
-  --row-h: 36px;
+  --radius-xl: 22px;
+  --radius-lg: 16px;
+  --radius: 12px;
+  --radius-sm: 9px;
+  --pill: 999px;
+  --row-h: 38px;
 
-  --shadow-sm: 0 1px 2px rgb(26 29 35 / 0.05);
-  --shadow-md: 0 4px 12px rgb(26 29 35 / 0.08);
-  --shadow-lg: 0 16px 40px rgb(26 29 35 / 0.14);
+  --shadow-sm: 0 1px 2px rgb(43 27 107 / 0.05);
+  --shadow-md: 0 6px 20px rgb(43 27 107 / 0.09);
+  --shadow-lg: 0 20px 50px rgb(43 27 107 / 0.18);
 
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif;
@@ -117,13 +131,13 @@ textarea {
 }
 
 a {
-  color: var(--blue-600);
+  color: var(--navy-600);
 }
 
 :focus-visible {
-  outline: 2px solid var(--blue-500);
+  outline: 2px solid var(--navy-500);
   outline-offset: 2px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -140,49 +154,49 @@ a {
 
 .shell {
   display: grid;
-  grid-template-columns: 228px minmax(0, 1fr);
+  grid-template-columns: 244px minmax(0, 1fr);
   height: 100vh;
   overflow: hidden;
+  background: var(--bg);
 }
 
 /* ------------------------------------------------------------- sidebar --- */
 
 .sidebar {
-  background: var(--surface);
-  border-right: 1px solid var(--line);
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 16px 12px 12px;
+  padding: 18px 14px 14px;
 }
 
 .sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 2px 6px 16px;
+  gap: 11px;
+  padding: 2px 8px 18px;
 }
 
 .sidebar-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius);
-  background: var(--blue-600);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--pill);
+  background: var(--navy-700);
   display: grid;
   place-items: center;
   color: #fff;
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 16px;
   flex: 0 0 auto;
 }
 
 .sidebar-brand-text strong {
   display: block;
   color: var(--text);
-  font-size: 14px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 }
 
 .sidebar-brand-text span {
@@ -199,23 +213,23 @@ a {
 
 .sidebar-search svg {
   position: absolute;
-  left: 10px;
+  left: 15px;
   top: 50%;
   transform: translateY(-50%);
   width: 15px;
   height: 15px;
-  color: var(--grey-400);
+  color: var(--warm-500);
   pointer-events: none;
 }
 
 .sidebar-search input {
   width: 100%;
-  height: 34px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--line);
-  background: var(--grey-50);
-  padding: 0 10px 0 32px;
-  font-size: 13px;
+  height: 40px;
+  border-radius: var(--pill);
+  border: 1px solid var(--warm-300);
+  background: var(--paper);
+  padding: 0 14px 0 37px;
+  font-size: 13.5px;
   color: var(--text);
 }
 
@@ -225,97 +239,107 @@ a {
 
 .sidebar-search input:focus {
   outline: none;
-  background: var(--surface);
-  border-color: var(--blue-500);
-  box-shadow: 0 0 0 3px var(--blue-100);
+  border-color: var(--navy-500);
+  box-shadow: 0 0 0 3px var(--navy-100);
 }
 
 .sidebar-label {
-  padding: 6px 8px 6px;
+  padding: 4px 12px 7px;
   font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--text-faint);
+}
+
+/* The blush nav container — the reference's pill navigation bar, turned vertical. */
+.sidebar-section {
+  background: var(--blush-50);
+  border-radius: var(--radius-xl);
+  padding: 7px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 10px;
-  margin-bottom: 1px;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
+  padding: 9px 13px;
+  margin-bottom: 2px;
+  border-radius: var(--pill);
+  color: var(--ink);
   text-decoration: none;
   font-size: 13.5px;
-  font-weight: 500;
+  font-weight: 550;
   line-height: 19px;
-  transition: background 0.12s, color 0.12s;
+  transition: background 0.14s, color 0.14s;
+}
+
+.nav-item:last-child {
+  margin-bottom: 0;
 }
 
 .nav-item:hover {
-  background: var(--grey-100);
-  color: var(--text);
+  background: var(--blush-100);
 }
 
-/* Active state uses a tint plus weight plus an edge marker — three cues, so it
-   still reads if colour perception differs. */
+/* Active: navy pill, echoing the reference's call-to-action buttons. Three cues —
+   fill, colour and weight — so it reads regardless of colour perception. */
 .nav-item.active {
-  background: var(--blue-50);
-  color: var(--blue-700);
+  background: var(--navy-700);
+  color: #fff;
   font-weight: 650;
-  box-shadow: inset 2px 0 0 var(--blue-600);
+  box-shadow: var(--shadow-sm);
 }
 
 .nav-item svg {
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
-  color: var(--grey-500);
+  color: var(--blush-600);
 }
 
 .nav-item.active svg {
-  color: var(--blue-600);
+  color: #fff;
 }
 
 .nav-count {
   margin-left: auto;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
-  padding: 0 6px;
-  border-radius: 10px;
-  background: var(--grey-100);
-  color: var(--text-muted);
+  padding: 0 7px;
+  border-radius: var(--pill);
+  background: var(--blush-200);
+  color: var(--ink);
   line-height: 18px;
 }
 
 .nav-item.active .nav-count {
-  background: var(--blue-100);
-  color: var(--blue-700);
+  background: rgb(255 255 255 / 0.24);
+  color: #fff;
 }
 
 .nav-count.alert {
-  background: var(--critical-bg);
-  color: var(--critical);
-  border: 1px solid var(--critical-border);
-  line-height: 16px;
+  background: var(--critical);
+  color: #fff;
+}
+
+.nav-item.active .nav-count.alert {
+  background: rgb(255 255 255 / 0.24);
+  color: #fff;
 }
 
 .sidebar-divider {
-  height: 1px;
-  background: var(--line);
-  margin: 12px 8px;
+  height: 0;
+  margin: 10px 0 0;
 }
 
 .sidebar-foot {
   margin-top: auto;
-  padding: 12px 10px 2px;
+  padding: 16px 14px 4px;
   font-size: 11.5px;
   color: var(--text-faint);
-  line-height: 1.6;
-  border-top: 1px solid var(--line-soft);
+  line-height: 1.65;
 }
 
 .sidebar-foot .dot {
@@ -323,8 +347,8 @@ a {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  margin-right: 6px;
-  background: var(--grey-400);
+  margin-right: 7px;
+  background: var(--warm-300);
 }
 
 .sidebar-foot .dot.ok {
@@ -337,11 +361,6 @@ a {
 
 /* ---------------------------------------------------------------- main --- */
 
-/* Flex, not grid. Pages render a variable number of top-level children — some
-   have a PageHeader + Tabs + page, others only PageHeader + page. A fixed
-   two-row grid handed the 1fr to whichever child landed second, which squeezed
-   the tab strip and pushed the page body underneath it. Flex sizes each child by
-   its own content and lets exactly one of them grow. */
 .main {
   display: flex;
   flex-direction: column;
@@ -361,7 +380,7 @@ a {
   flex: 1 1 auto;
   overflow-y: auto;
   min-height: 0;
-  padding: 18px 24px 32px;
+  padding: 18px 26px 32px;
 }
 
 .page.flush {
@@ -374,25 +393,25 @@ a {
 /* ------------------------------------------------------------ pageheader - */
 
 .pagehead {
-  padding: 18px 24px 16px;
+  padding: 22px 26px 18px;
   display: flex;
   align-items: flex-start;
-  gap: 18px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  gap: 20px;
+  background: var(--bg);
 }
 
+/* Display heading — the reference's confident, tightly-tracked title. */
 .pagehead h1 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
   color: var(--text);
 }
 
 .pagehead p {
-  margin: 3px 0 0;
+  margin: 6px 0 0;
   font-size: 13.5px;
   color: var(--text-muted);
 }
@@ -408,7 +427,7 @@ a {
 .crumb {
   font-size: 12px;
   color: var(--text-faint);
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 .crumb a {
@@ -417,7 +436,7 @@ a {
 }
 
 .crumb a:hover {
-  color: var(--blue-600);
+  color: var(--navy-600);
   text-decoration: underline;
 }
 
@@ -427,52 +446,49 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  height: 34px;
-  padding: 0 13px;
+  height: 36px;
+  padding: 0 16px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--grey-700);
+  border-radius: var(--pill);
+  background: var(--paper);
+  color: var(--ink);
   font-size: 13px;
-  font-weight: 550;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: var(--shadow-sm);
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
 }
 
 .btn:hover:not(:disabled) {
-  background: var(--grey-50);
-  color: var(--text);
+  background: var(--cream-100);
+  border-color: var(--warm-500);
 }
 
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.42;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
+/* Navy pill — the reference's product buttons. */
 .btn.primary {
-  background: var(--blue-600);
-  border-color: var(--blue-600);
+  background: var(--navy-700);
+  border-color: var(--navy-700);
   color: #fff;
-  font-weight: 600;
 }
 
 .btn.primary:hover:not(:disabled) {
-  background: var(--blue-700);
-  border-color: var(--blue-700);
+  background: var(--navy-800);
+  border-color: var(--navy-800);
 }
 
 .btn.ghost {
   background: transparent;
   border-color: transparent;
   color: var(--text-muted);
-  box-shadow: none;
 }
 
 .btn.ghost:hover:not(:disabled) {
-  background: var(--grey-100);
+  background: var(--warm-100);
   color: var(--text);
 }
 
@@ -483,12 +499,12 @@ a {
 }
 
 .btn.danger:hover:not(:disabled) {
-  background: #fee4e2;
+  background: #fbe3de;
 }
 
 .btn.sm {
-  height: 27px;
-  padding: 0 9px;
+  height: 28px;
+  padding: 0 12px;
   font-size: 12.5px;
 }
 
@@ -499,23 +515,22 @@ a {
 
 .input,
 .select {
-  height: 34px;
-  padding: 0 10px;
+  height: 36px;
+  padding: 0 14px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
+  border-radius: var(--pill);
+  background: var(--paper);
   color: var(--text);
   min-width: 0;
-  box-shadow: var(--shadow-sm);
 }
 
 .select {
   cursor: pointer;
-  padding-right: 28px;
+  padding-right: 30px;
   appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a6270' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23575167' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");
   background-repeat: no-repeat;
-  background-position: right 9px center;
+  background-position: right 12px center;
 }
 
 .input::placeholder {
@@ -526,45 +541,46 @@ a {
 .select:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--blue-500);
-  box-shadow: 0 0 0 3px var(--blue-100);
+  border-color: var(--navy-500);
+  box-shadow: 0 0 0 3px var(--navy-100);
 }
 
 textarea.input {
   height: auto;
-  padding: 8px 10px;
+  border-radius: var(--radius);
+  padding: 10px 14px;
   resize: vertical;
   font-size: 13px;
   line-height: 1.5;
 }
 
 input[type="checkbox"] {
-  accent-color: var(--blue-600);
-  width: 15px;
-  height: 15px;
+  accent-color: var(--navy-700);
+  width: 16px;
+  height: 16px;
 }
 
 .search-field {
   position: relative;
   flex: 1;
-  min-width: 200px;
-  max-width: 380px;
+  min-width: 210px;
+  max-width: 390px;
 }
 
 .search-field svg {
   position: absolute;
-  left: 10px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   width: 15px;
   height: 15px;
-  color: var(--grey-400);
+  color: var(--warm-500);
   pointer-events: none;
 }
 
 .search-field .input {
   width: 100%;
-  padding-left: 32px;
+  padding-left: 36px;
 }
 
 /* --------------------------------------------------------------- toolbar - */
@@ -573,9 +589,7 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  padding: 4px 26px 16px;
   flex-wrap: wrap;
 }
 
@@ -587,9 +601,7 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 10px 24px;
-  background: var(--grey-25);
-  border-bottom: 1px solid var(--line);
+  padding: 0 26px 16px;
   flex-wrap: wrap;
   font-size: 12.5px;
 }
@@ -597,31 +609,30 @@ input[type="checkbox"] {
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  height: 25px;
-  padding: 0 5px 0 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--blue-200);
-  background: var(--blue-50);
-  color: var(--blue-700);
+  gap: 6px;
+  height: 27px;
+  padding: 0 7px 0 13px;
+  border-radius: var(--pill);
+  border: 1px solid var(--blush-200);
+  background: var(--blush-50);
+  color: var(--blush-600);
   font-size: 12px;
-  font-weight: 550;
+  font-weight: 600;
 }
 
 .chip button {
   border: 0;
   background: none;
   cursor: pointer;
-  color: var(--blue-600);
+  color: var(--blush-600);
   padding: 0 3px;
   line-height: 1;
-  font-size: 14px;
-  border-radius: 3px;
+  font-size: 15px;
+  border-radius: 50%;
 }
 
 .chip button:hover {
-  color: var(--blue-800);
-  background: var(--blue-100);
+  color: var(--navy-700);
 }
 
 /* ---------------------------------------------------------------- cards -- */
@@ -638,15 +649,15 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 13px 16px;
+  padding: 15px 18px;
   border-bottom: 1px solid var(--line-soft);
 }
 
 .card-head h2 {
   margin: 0;
-  font-size: 14px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .card-head .sub {
@@ -655,7 +666,7 @@ input[type="checkbox"] {
 }
 
 .card-body {
-  padding: 16px;
+  padding: 17px 18px;
 }
 
 .grid {
@@ -686,23 +697,23 @@ input[type="checkbox"] {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: 14px 16px;
+  padding: 15px 18px;
   box-shadow: var(--shadow-sm);
 }
 
 .stat .label {
   font-size: 12.5px;
-  font-weight: 550;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
 .stat .value {
-  font-size: 24px;
-  font-weight: 680;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
-  margin-top: 4px;
+  margin-top: 5px;
   color: var(--text);
 }
 
@@ -710,7 +721,7 @@ input[type="checkbox"] {
   color: var(--critical);
 }
 .stat .value.brand {
-  color: var(--blue-600);
+  color: var(--navy-700);
 }
 
 .stat .foot {
@@ -723,51 +734,51 @@ input[type="checkbox"] {
 
 .tabs {
   display: flex;
-  gap: 2px;
-  padding: 0 24px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  gap: 6px;
+  padding: 0 26px 16px;
   flex-wrap: wrap;
 }
 
 .tab {
-  border: 0;
-  background: none;
-  padding: 10px 12px 9px;
-  font-size: 13.5px;
-  font-weight: 550;
+  border: 1px solid transparent;
+  background: var(--cream-100);
+  padding: 0 15px;
+  height: 32px;
+  border-radius: var(--pill);
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  transition: background 0.14s, color 0.14s;
 }
 
 .tab:hover {
+  background: var(--blush-50);
   color: var(--text);
 }
 
 .tab.active {
-  color: var(--blue-700);
-  border-bottom-color: var(--blue-600);
+  background: var(--navy-700);
+  color: #fff;
   font-weight: 650;
 }
 
 .tab .n {
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  background: var(--grey-100);
-  color: var(--text-muted);
-  border-radius: 10px;
+  background: var(--warm-200);
+  color: var(--ink-muted);
+  border-radius: var(--pill);
   padding: 0 6px;
   line-height: 17px;
 }
 
 .tab.active .n {
-  background: var(--blue-100);
-  color: var(--blue-700);
+  background: rgb(255 255 255 / 0.24);
+  color: #fff;
 }
 
 /* ---------------------------------------------------------------- table -- */
@@ -784,6 +795,13 @@ input[type="checkbox"] {
   box-shadow: var(--shadow-sm);
 }
 
+.page.flush .tablewrap {
+  margin: 0 26px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
 table {
   width: 100%;
   border-collapse: separate;
@@ -794,13 +812,13 @@ thead th {
   position: sticky;
   top: 0;
   z-index: 2;
-  background: var(--grey-50);
+  background: var(--cream-100);
   border-bottom: 1px solid var(--line);
-  padding: 0 12px;
-  height: 34px;
+  padding: 0 13px;
+  height: 36px;
   font-size: 11.5px;
-  font-weight: 650;
-  letter-spacing: 0.01em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--text-muted);
   text-align: left;
   white-space: nowrap;
@@ -812,11 +830,11 @@ thead th.sortable {
 }
 
 thead th.sortable:hover {
-  color: var(--blue-600);
+  color: var(--navy-700);
 }
 
 thead th .arrow {
-  color: var(--blue-600);
+  color: var(--navy-700);
   margin-left: 4px;
 }
 
@@ -830,23 +848,23 @@ tbody tr.clickable {
 }
 
 tbody tr.clickable:hover {
-  background: var(--grey-50);
+  background: var(--cream);
 }
 
 tbody tr[aria-selected="true"] {
-  background: var(--blue-50);
-  box-shadow: inset 2px 0 0 var(--blue-600);
+  background: var(--blush-50);
+  box-shadow: inset 3px 0 0 var(--navy-700);
 }
 
 tbody td {
-  padding: 0 12px;
+  padding: 0 13px;
   border-bottom: 1px solid var(--line-soft);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 1px;
   font-size: 13px;
-  color: var(--grey-700);
+  color: var(--ink-muted);
 }
 
 td.wrap {
@@ -854,7 +872,7 @@ td.wrap {
 }
 
 .cell-title {
-  font-weight: 550;
+  font-weight: 600;
   color: var(--text);
 }
 
@@ -879,13 +897,13 @@ td.wrap {
 
 .missing {
   color: var(--critical);
-  font-weight: 600;
+  font-weight: 650;
   font-size: 12.5px;
 }
 
 .overdue {
   color: var(--critical);
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .untitled {
@@ -899,11 +917,11 @@ td.wrap {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  height: 21px;
-  padding: 0 8px;
-  border-radius: 11px;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: var(--pill);
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 650;
   white-space: nowrap;
   border: 1px solid transparent;
 }
@@ -917,15 +935,15 @@ td.wrap {
 }
 
 .pill.neutral {
-  background: var(--grey-100);
-  color: var(--grey-700);
-  border-color: var(--grey-200);
+  background: var(--warm-100);
+  color: var(--ink-muted);
+  border-color: var(--warm-200);
 }
 .pill.brand,
 .pill.active {
-  background: var(--blue-50);
-  color: var(--blue-700);
-  border-color: var(--blue-200);
+  background: var(--navy-50);
+  color: var(--navy-700);
+  border-color: var(--navy-100);
 }
 .pill.info {
   background: var(--info-bg);
@@ -949,28 +967,28 @@ td.wrap {
 }
 
 /* Live work carries a filled dot, finished work a hollow ring — a non-colour cue
-   distinguishing In Progress from Resolved. */
+   separating In Progress from Resolved. */
 .pill.active .led {
-  background: var(--blue-600);
+  background: var(--navy-700);
 }
 
 .pill.success .led {
   background: transparent;
   border: 1.5px solid currentColor;
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
 }
 
 /* Severity gutter. Redundant with the Severity column, never the only signal. */
 td.gutter,
 th.gutter {
-  width: 3px;
-  min-width: 3px;
+  width: 4px;
+  min-width: 4px;
   padding: 0;
 }
 
 td.gutter div {
-  width: 3px;
+  width: 4px;
   height: var(--row-h);
 }
 
@@ -1005,15 +1023,15 @@ td.gutter div {
 }
 
 .avatar {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: var(--blue-100);
-  color: var(--blue-700);
+  background: var(--blush-100);
+  color: var(--blush-600);
   display: inline-grid;
   place-items: center;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 750;
   flex: 0 0 auto;
 }
 
@@ -1033,10 +1051,10 @@ td.gutter div {
 
 .flagbox {
   border: 1px solid var(--line);
-  border-left: 3px solid var(--line-strong);
+  border-left: 4px solid var(--warm-300);
   border-radius: var(--radius);
-  padding: 10px 12px;
-  margin-bottom: 8px;
+  padding: 11px 13px;
+  margin-bottom: 9px;
   background: var(--surface);
 }
 
@@ -1058,16 +1076,16 @@ td.gutter div {
 
 .flagbox.resolved {
   opacity: 0.72;
-  background: var(--grey-50);
+  background: var(--cream-100);
   border-color: var(--line);
-  border-left-color: var(--grey-400);
+  border-left-color: var(--warm-300);
 }
 
 .flagbox-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   flex-wrap: wrap;
 }
 
@@ -1096,18 +1114,18 @@ td.gutter div {
 .flagbox-msg {
   font-size: 13px;
   line-height: 1.5;
-  color: var(--grey-800);
+  color: var(--ink);
 }
 
 .raw {
-  margin-top: 6px;
+  margin-top: 7px;
   font-family: var(--mono);
   font-size: 11.5px;
-  color: var(--grey-700);
-  background: var(--grey-50);
+  color: var(--ink-muted);
+  background: rgb(255 255 255 / 0.7);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  padding: 6px 8px;
+  padding: 7px 9px;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
@@ -1116,8 +1134,8 @@ td.gutter div {
 
 .kv {
   display: grid;
-  grid-template-columns: 120px minmax(0, 1fr);
-  gap: 7px 12px;
+  grid-template-columns: 122px minmax(0, 1fr);
+  gap: 8px 12px;
   font-size: 13px;
   margin: 0;
 }
@@ -1137,18 +1155,18 @@ td.gutter div {
 .itemrow {
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 12px 14px;
-  margin-bottom: 9px;
+  padding: 13px 15px;
+  margin-bottom: 10px;
   background: var(--surface);
 }
 
 .itemrow.done {
-  background: var(--grey-25);
+  background: var(--cream-100);
 }
 
 .itemrow-title {
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 650;
   line-height: 1.4;
   color: var(--text);
 }
@@ -1160,26 +1178,27 @@ td.gutter div {
   flex-wrap: wrap;
   font-size: 12.5px;
   color: var(--text-muted);
-  margin-top: 6px;
+  margin-top: 7px;
 }
 
 .itemrow-controls {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 11px;
   flex-wrap: wrap;
 }
 
 .itemrow-controls .select {
-  height: 29px;
+  height: 30px;
   font-size: 12.5px;
+  padding: 0 26px 0 12px;
 }
 
 .audit {
-  margin-top: 9px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--line);
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px dashed var(--warm-300);
   font-size: 11.5px;
   color: var(--text-muted);
   font-family: var(--mono);
@@ -1203,7 +1222,7 @@ td.gutter div {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgb(26 29 35 / 0.4);
+  background: rgb(33 20 80 / 0.34);
   display: grid;
   place-items: center;
   z-index: 100;
@@ -1212,42 +1231,42 @@ td.gutter div {
 
 .modal {
   background: var(--surface);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   width: 100%;
-  max-width: 500px;
+  max-width: 512px;
   max-height: 88vh;
   overflow-y: auto;
 }
 
 .modal-head {
-  padding: 18px 20px 12px;
+  padding: 20px 22px 13px;
   border-bottom: 1px solid var(--line-soft);
 }
 
 .modal-head h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 650;
-  letter-spacing: -0.015em;
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
 }
 
 .modal-head p {
-  margin: 4px 0 0;
+  margin: 5px 0 0;
   font-size: 13px;
   color: var(--text-muted);
 }
 
 .modal-body {
-  padding: 16px 20px;
+  padding: 17px 22px;
   display: grid;
-  gap: 13px;
+  gap: 14px;
 }
 
 .modal-foot {
-  padding: 13px 20px 18px;
+  padding: 14px 22px 20px;
   display: flex;
-  gap: 8px;
+  gap: 9px;
   justify-content: flex-end;
   border-top: 1px solid var(--line-soft);
 }
@@ -1255,9 +1274,9 @@ td.gutter div {
 .field label {
   display: block;
   font-size: 12.5px;
-  font-weight: 600;
-  color: var(--grey-700);
-  margin-bottom: 5px;
+  font-weight: 650;
+  color: var(--ink);
+  margin-bottom: 6px;
 }
 
 .field .input,
@@ -1275,10 +1294,10 @@ td.gutter div {
 
 .toastwrap {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 22px;
+  right: 22px;
   display: grid;
-  gap: 9px;
+  gap: 10px;
   z-index: 200;
   max-width: 400px;
 }
@@ -1287,14 +1306,14 @@ td.gutter div {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  padding: 12px 14px;
+  padding: 13px 16px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
   font-size: 13px;
   line-height: 1.45;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-left: 3px solid var(--grey-400);
+  border-left: 4px solid var(--warm-300);
   animation: slidein 0.16s ease-out;
 }
 
@@ -1328,9 +1347,11 @@ td.gutter div {
 .tablefoot {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 9px 24px;
-  border-top: 1px solid var(--line);
+  gap: 12px;
+  margin: 0 26px 20px;
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   font-size: 12.5px;
   color: var(--text-muted);
   background: var(--surface);
@@ -1339,36 +1360,37 @@ td.gutter div {
 kbd {
   font-family: var(--mono);
   font-size: 11px;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--warm-300);
   border-bottom-width: 2px;
-  border-radius: 4px;
+  border-radius: 5px;
   padding: 1px 5px;
-  background: var(--grey-50);
+  background: var(--cream-100);
   color: var(--text-muted);
 }
 
 code {
   font-family: var(--mono);
   font-size: 12px;
-  background: var(--grey-100);
-  border: 1px solid var(--line);
-  border-radius: 4px;
+  background: var(--blush-50);
+  border: 1px solid var(--blush-100);
+  border-radius: 5px;
   padding: 1px 5px;
-  color: var(--grey-800);
+  color: var(--blush-600);
 }
 
 /* -------------------------------------------------------------- states --- */
 
 .empty {
-  padding: 52px 24px;
+  padding: 56px 24px;
   text-align: center;
   color: var(--text-muted);
 }
 
 .empty h3 {
-  margin: 0 0 5px;
-  font-size: 15px;
-  font-weight: 650;
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
   color: var(--text);
 }
 
@@ -1379,8 +1401,8 @@ code {
 
 .skeleton {
   height: 10px;
-  border-radius: 5px;
-  background: linear-gradient(90deg, var(--grey-100), var(--grey-50), var(--grey-100));
+  border-radius: var(--pill);
+  background: linear-gradient(90deg, var(--warm-100), var(--cream-100), var(--warm-100));
   background-size: 200% 100%;
   animation: shimmer 1.2s linear infinite;
 }
@@ -1392,16 +1414,16 @@ code {
 }
 
 .progress {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--grey-200);
+  height: 7px;
+  border-radius: var(--pill);
+  background: var(--warm-200);
   overflow: hidden;
 }
 
 .progress > div {
   height: 100%;
-  border-radius: 3px;
-  background: var(--blue-500);
+  border-radius: var(--pill);
+  background: var(--navy-600);
 }
 
 .bar-critical {
@@ -1422,7 +1444,7 @@ code {
 
 .stack {
   display: grid;
-  gap: 13px;
+  gap: 14px;
 }
 
 .row {
