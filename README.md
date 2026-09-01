@@ -273,9 +273,9 @@ client would create two sources of truth that drift apart.
 
 ## The interface
 
-A purple-and-cool-grey desktop console: fixed left sidebar, compact page headers,
-tabbed sections, dense tables. Built for someone processing a queue, not admiring a
-dashboard.
+A dark desktop console: near-black canvas, dark rounded surfaces, hairline rules, a
+single lime accent, fixed left sidebar, pill tabs and dense tables. Built for someone
+processing a queue, not admiring a dashboard.
 
 **Screens and routes**
 
@@ -293,9 +293,13 @@ dashboard.
 
 **Design rules held throughout**
 
-- **Colour carries exactly one meaning: data-quality severity.** Purple is brand and
-  interaction only — active nav, primary buttons, selected rows. Because nothing else
-  is red, a red cell is never ambiguous.
+- **Two colour families, each with one job.** Lime is brand, interactive and
+  affirmative — active nav, primary buttons, focus rings, clean/resolved states.
+  Red/amber/blue signal *attention*, and nothing else in the product is ever red, so
+  a red cell is never ambiguous.
+- **Live work is louder than finished work.** In Progress uses filled lime; Resolved
+  uses a tinted lime. Without that split the two statuses render identically — the
+  system needed a fourth tone, not a reused one.
 - **34px rows, 13px type**, on an 8px grid. Metric tiles exist but are deliberately
   small; nav badges and tab counts carry most of the numbers.
 - **Risk-first by default** — the queue sorts by critical-flag count descending.

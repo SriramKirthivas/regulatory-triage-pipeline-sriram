@@ -14,7 +14,14 @@ import { initials, label } from "../lib/format";
 
 /* ------------------------------------------------------------------- pills */
 
-type Tone = "neutral" | "brand" | "info" | "warning" | "critical" | "success";
+type Tone =
+  | "neutral"
+  | "brand"
+  | "active"
+  | "info"
+  | "warning"
+  | "critical"
+  | "success";
 
 export function Pill({
   tone = "neutral",
@@ -47,7 +54,7 @@ export const DirectiveStatusPill = ({ status }: { status: DirectiveStatus }) => 
 
 const TRIAGE_TONE: Record<TriageStatus, Tone> = {
   PENDING: "warning",
-  IN_PROGRESS: "brand",
+  IN_PROGRESS: "active",
   RESOLVED: "success",
   NO_ITEMS: "neutral",
 };
@@ -67,7 +74,7 @@ export const TriageStatusPill = ({ status }: { status: TriageStatus }) => (
 
 const ITEM_TONE: Record<ActionItemStatus, Tone> = {
   PENDING: "warning",
-  IN_REVIEW: "brand",
+  IN_REVIEW: "active",
   BLOCKED: "critical",
   RESOLVED: "success",
   DISMISSED: "neutral",
