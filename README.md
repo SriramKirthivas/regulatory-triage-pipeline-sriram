@@ -1,12 +1,14 @@
-# Regulatory Intelligence Triage Pipeline
+# Artixio — Regulatory Intelligence Triage Pipeline
 
 A decision-layer application for a regulatory compliance officer: ingest simulated
 regulatory updates from multiple authorities, catch the defects in that data on the
-way in, and present the result as a dense triage queue that can be worked with a
-keyboard.
+way in, and present the result as a dense multi-screen operations console.
 
 **Stack:** PostgreSQL 16 · FastAPI + SQLAlchemy 2.0 + Pydantic v2 · React 18 + Vite +
-TanStack Query/Table · TypeScript.
+React Router + TanStack Query/Table · TypeScript.
+
+**Screens:** Updates (triage queue) · Update detail · Authorities · Directives ·
+Action Items · Data Quality · Saved Views · API Health · Settings.
 
 ---
 
@@ -213,13 +215,39 @@ triageable, and still carries all five.
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/api/directives` | Filter, sort, paginate. Query params: `q`, `authority[]`, `status[]`, `severity[]`, `issue[]`, `flagged_only`, `has_open_items`, `sort`, `order`, `page`, `page_size` |
+| `GET` | `/api/directives` | Filter, sort, paginate. Params: `q`, `authority[]`, `status[]`, `severity[]`, `issue[]`, `triage[]`, `owner[]`, `flagged_only`, `has_open_items`, `overdue_only`, `sort`, `order`, `page`, `page_size` |
 | `GET` | `/api/directives/{id}` | Detail, including flags, action items and `raw_payload` |
-| `GET` | `/api/action-items/{id}` | Single item with its audit trail |
-| `PATCH` | `/api/action-items/{id}` | Change status. Records a `StatusChange` |
-| `GET` | `/api/authorities` | Authority list |
-| `GET` | `/api/meta/counts` | Aggregate counts driving the filter rail |
-| `GET` | `/health` | Liveness + database reachability |
+| `GET` | `/api/directives/{id}/neighbours` | Previous/next ids for the record stepper |
+| `POST` | `/api/directives/{id}/action-items` | Create tracked work (strict validation) |
+| `POST` | `/api/directives/{id}/flags` | Raise a manual data-quality issue |
+| `POST` | `/api/directives/{id}/revalidate` | Re-run the ingest rules over the stored raw payload |
+| `GET` | `/api/action-items` | Work across all directives; filter by status, owner, priority, overdue, unassigned |
+| `GET` | `/api/action-items/owners` | Distinct assignees for the Assign Owner control |
+| `PATCH` | `/api/action-items/{id}` | Partial update: status, owner, priority, due date |
+| `GET` | `/api/flags` | The corrupt-record register |
+| `POST` | `/api/flags/{id}/resolve` · `/reopen` | Acknowledge or reopen an issue |
+| `GET` | `/api/authorities` | Authorities with portfolio stats |
+| `GET` | `/api/meta/counts` | Aggregate counts driving filters and nav badges |
+| `GET` | `/health` | Liveness, latency, row counts, ingest summary |
+
+### Two validation postures, on purpose
+
+Ingestion **coerces and flags** — a regulator's feed is not going to be re-sent, so a
+bad value is stored as NULL with a flag rather than rejected. Officer-entered data
+(`POST` action items, manual flags) is **validated strictly and rejected** with a 422 —
+we can ask the person at the keyboard what they meant.
+
+### Derived, never stored
+
+`triage_status`, `primary_owner` and `next_due_date` are computed from action items on
+read (`api/app/rollup.py`). Storing them would mean every write has to remember to
+update them, and the day someone forgets, the queue lies about what is outstanding.
+
+The catch: the queue *filter* needs the same definition in SQL. Two definitions of one
+concept is a bug waiting to happen, so `tests/test_rollup.py` enumerates every
+combination of action-item statuses up to length three and asserts the Python and SQL
+definitions agree on all of them, and that the four buckets partition the space
+exactly.
 
 ### Validation behaviour
 
@@ -245,25 +273,47 @@ client would create two sources of truth that drift apart.
 
 ## The interface
 
-Built for someone processing a queue, not admiring a dashboard. There are no
-oversized metric tiles — the counts live inline in the top bar and, more usefully, as
-badges on each filter, so you can see where the volume is *before* clicking.
+A purple-and-cool-grey desktop console: fixed left sidebar, compact page headers,
+tabbed sections, dense tables. Built for someone processing a queue, not admiring a
+dashboard.
 
-- **26px rows, 13px type.** The whole working set is visible without scrolling.
-- **Colour means exactly one thing: data-quality severity.** A 4px gutter bar on
-  every row is scannable down the whole column; nothing else is coloured, so red is
-  never ambiguous.
-- **Risk-first by default.** The table sorts by critical-flag count descending —
-  triage starts with what is most broken.
-- **Missing dates render as `— missing` in red**, because an absent effective date is
-  a finding, not an empty cell.
-- **Flag counts per row** as `2C 1W` (critical/warning/info); the detail panel
-  expands each into field, reason, and the original value the source sent.
-- **Optimistic status updates** via TanStack Query — the UI moves immediately and
-  rolls back with an explanation if the server refuses.
-- **Keyboard triage:** <kbd>j</kbd>/<kbd>k</kbd> to walk rows, <kbd>/</kbd> to
-  search, <kbd>esc</kbd> to close the panel.
-- Light and dark themes follow the OS setting.
+**Screens and routes**
+
+| Route | Screen | What it is for |
+|---|---|---|
+| `/updates` | Regulatory Updates | The triage queue — the primary surface |
+| `/updates/:id` | Update detail | One record: overview, action items, data quality, raw source |
+| `/authorities` | Authorities | Issuing bodies ranked by workload; drills through to a filtered queue |
+| `/directives` | Directives | The document library, tabbed by lifecycle state |
+| `/action-items` | Action Items | Assigned work across all directives, editable inline |
+| `/data-quality` | Data Quality | The corrupt-record register |
+| `/saved-views` | Saved Views | Named filter sets |
+| `/api-health` | API Health | Service, database, latency, ingest summary |
+| `/settings` | Settings | Preferences, plus read-only validation and workflow rules |
+
+**Design rules held throughout**
+
+- **Colour carries exactly one meaning: data-quality severity.** Purple is brand and
+  interaction only — active nav, primary buttons, selected rows. Because nothing else
+  is red, a red cell is never ambiguous.
+- **34px rows, 13px type**, on an 8px grid. Metric tiles exist but are deliberately
+  small; nav badges and tab counts carry most of the numbers.
+- **Risk-first by default** — the queue sorts by critical-flag count descending.
+- **Missing dates render as `missing` in red.** An absent effective date is a finding,
+  not an empty cell.
+- **Optimistic updates with rollback.** An illegal transition surfaces the server's
+  actual reason in a toast rather than a generic failure.
+- **Keyboard triage:** <kbd>j</kbd>/<kbd>k</kbd> walk rows, <kbd>enter</kbd> opens,
+  <kbd>/</kbd> focuses search.
+
+**Interactions wired to real endpoints:** view details · assign owner · change status ·
+resolve action · flag record · validate data · create action item · acknowledge/reopen
+issue · save view · export CSV · back to queue · previous/next record.
+
+Export writes the **currently filtered and sorted rows** — an export that silently
+returns a different result set than the one on screen is worse than no export. Cells
+beginning `=`, `+`, `-` or `@` are prefixed so a CSV cannot smuggle a formula into
+Excel.
 
 ---
 
@@ -283,28 +333,40 @@ badges on each filter, so you can see where the volume is *before* clicking.
 │       ├── models.py          SQLAlchemy models — the schema
 │       ├── schemas.py         Pydantic API contracts
 │       ├── normalize.py       ★ The ingest pipeline. Pure functions, no DB
+│       ├── rollup.py          Derived directive-level status
 │       ├── triage.py          Status transition rules
-│       ├── routers/           directives · action_items · meta
+│       ├── routers/           directives · action_items · flags · meta
 │       └── seed/
 │           ├── raw_data.py    ★ The deliberately messy mock feed
 │           └── seed.py        Pushes raw data through the real pipeline
 └── web/
     └── src/
         ├── api.ts             Typed client, mirrors the Pydantic contracts
-        ├── App.tsx            Filter state, keyboard nav, layout
-        ├── styles.css         Density system
-        └── components/        FilterRail · DirectiveTable · DetailPanel
+        ├── App.tsx            Routes
+        ├── styles.css         The design system
+        ├── components/        Sidebar · PageHeader · ui.tsx (pills, modal, toast)
+        ├── lib/               CSV export · saved views · formatting
+        └── pages/             One file per screen
 ```
 
 `normalize.py` holds no database imports, so every coercion rule is directly
-unit-testable without a Postgres.
+unit-testable without a Postgres. 62 tests cover the coercion rules, the transition
+graph, and the rollup parity described above:
+
+```bash
+docker compose exec api pytest -q
+```
 
 ---
 
 ## AI workflow
 
-[`NOTES.md`](./NOTES.md) records a bug an AI tool introduced during this build — a
-shared "null-ish" vocabulary that would have made legitimate `"pending"` and
-`"unknown"` status values register as missing data, attaching false flags without
-failing a single test. It covers what was generated, why it was wrong, how I caught
-it, and the fix.
+[`NOTES.md`](./NOTES.md) records two bugs that came out of AI-assisted work on this
+build, with what was generated, why it was wrong, how I caught it, and the fix:
+
+1. A shared "null-ish" vocabulary that would have made legitimate `"pending"` and
+   `"unknown"` status values register as missing data — attaching false flags
+   without failing a single test.
+2. A Vite proxy rule (`"/api"`) that also captured the client-side route
+   `/api-health`, and left `/health` unproxied so the health check parsed HTML as
+   JSON. Both only showed up because I curled every route instead of assuming.

@@ -92,6 +92,27 @@ class FlagSeverity(str, enum.Enum):
     CRITICAL = "CRITICAL"
 
 
+class FlagSource(str, enum.Enum):
+    """Who raised the flag.
+
+    SYSTEM flags are re-derivable — revalidation deletes and recomputes them.
+    MANUAL flags were raised by an officer who spotted something the pipeline
+    could not, so revalidation must never discard them.
+    """
+
+    SYSTEM = "SYSTEM"
+    MANUAL = "MANUAL"
+
+
+class TriageStatus(str, enum.Enum):
+    """Directive-level rollup of its action items. Derived, never stored."""
+
+    NO_ITEMS = "NO_ITEMS"
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    RESOLVED = "RESOLVED"
+
+
 # Shared column types. Each Postgres ENUM must be represented by ONE type object,
 # otherwise create_all() emits CREATE TYPE once per column that uses it.
 DirectiveStatusType = SQLEnum(DirectiveStatus, name="directive_status")
@@ -99,6 +120,7 @@ ActionItemStatusType = SQLEnum(ActionItemStatus, name="action_item_status")
 PriorityType = SQLEnum(Priority, name="priority")
 FlagIssueType = SQLEnum(FlagIssue, name="flag_issue")
 FlagSeverityType = SQLEnum(FlagSeverity, name="flag_severity")
+FlagSourceType = SQLEnum(FlagSource, name="flag_source")
 
 
 # --------------------------------------------------------------------------- #
@@ -175,6 +197,16 @@ class ComplianceDirective(Base):
         Index("ix_directive_authority_status", "authority_id", "status"),
     )
 
+    @property
+    def authority_code(self) -> str:
+        """Flattened for list serialisation.
+
+        Rows in the Action Items and Data Quality screens need the authority code
+        but not the whole authority object; exposing it here lets Pydantic's
+        from_attributes reach it without every router hand-building a nested DTO.
+        """
+        return self.authority.code
+
 
 class ActionItem(Base):
     """The unit of work a compliance officer moves through triage."""
@@ -246,6 +278,16 @@ class DataQualityFlag(Base):
     detected_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+    source: Mapped[FlagSource] = mapped_column(
+        FlagSourceType, default=FlagSource.SYSTEM, index=True
+    )
+
+    # Acknowledged flags stay on the record — a defect that was reviewed is part of
+    # the history, so it is closed rather than deleted.
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    resolved_by: Mapped[str | None] = mapped_column(String(120))
+    resolution_note: Mapped[str | None] = mapped_column(String(400))
 
     directive: Mapped[ComplianceDirective] = relationship(back_populates="flags")
 

@@ -12,9 +12,10 @@ from ..models import (
     ActionItemStatus,
     ComplianceDirective,
     DataQualityFlag,
+    FlagSeverity,
     RegulatoryAuthority,
 )
-from ..schemas import AuthorityOut, CountBucket, MetaCounts
+from ..schemas import AuthorityRow, CountBucket, MetaCounts
 
 router = APIRouter(prefix="/api", tags=["meta"])
 
@@ -25,9 +26,81 @@ def _label(value: str) -> str:
     return value.replace("_", " ").title()
 
 
-@router.get("/authorities", response_model=list[AuthorityOut])
-def list_authorities(db: Session = Depends(get_db)):
-    return db.scalars(select(RegulatoryAuthority).order_by(RegulatoryAuthority.code)).all()
+@router.get("/authorities", response_model=list[AuthorityRow])
+def list_authorities(db: Session = Depends(get_db)) -> list[AuthorityRow]:
+    """Authorities with the portfolio stats the Authorities screen ranks by.
+
+    Computed with grouped subqueries rather than per-authority queries, so adding
+    an authority does not add a round trip.
+    """
+    authorities = db.scalars(
+        select(RegulatoryAuthority).order_by(RegulatoryAuthority.code)
+    ).all()
+
+    directive_stats = dict(
+        db.execute(
+            select(
+                ComplianceDirective.authority_id,
+                func.count(ComplianceDirective.id),
+            ).group_by(ComplianceDirective.authority_id)
+        ).all()
+    )
+    latest_published = dict(
+        db.execute(
+            select(
+                ComplianceDirective.authority_id,
+                func.max(ComplianceDirective.published_date),
+            ).group_by(ComplianceDirective.authority_id)
+        ).all()
+    )
+    item_stats = dict(
+        db.execute(
+            select(ComplianceDirective.authority_id, func.count(ActionItem.id))
+            .join(ActionItem, ActionItem.directive_id == ComplianceDirective.id)
+            .group_by(ComplianceDirective.authority_id)
+        ).all()
+    )
+    open_item_stats = dict(
+        db.execute(
+            select(ComplianceDirective.authority_id, func.count(ActionItem.id))
+            .join(ActionItem, ActionItem.directive_id == ComplianceDirective.id)
+            .where(ActionItem.status.notin_(TERMINAL))
+            .group_by(ComplianceDirective.authority_id)
+        ).all()
+    )
+    flag_stats = dict(
+        db.execute(
+            select(ComplianceDirective.authority_id, func.count(DataQualityFlag.id))
+            .join(
+                DataQualityFlag,
+                DataQualityFlag.directive_id == ComplianceDirective.id,
+            )
+            .group_by(ComplianceDirective.authority_id)
+        ).all()
+    )
+    critical_stats = dict(
+        db.execute(
+            select(ComplianceDirective.authority_id, func.count(DataQualityFlag.id))
+            .join(
+                DataQualityFlag,
+                DataQualityFlag.directive_id == ComplianceDirective.id,
+            )
+            .where(DataQualityFlag.severity == FlagSeverity.CRITICAL)
+            .group_by(ComplianceDirective.authority_id)
+        ).all()
+    )
+
+    rows: list[AuthorityRow] = []
+    for authority in authorities:
+        row = AuthorityRow.model_validate(authority)
+        row.directive_count = directive_stats.get(authority.id, 0)
+        row.action_item_count = item_stats.get(authority.id, 0)
+        row.open_action_items = open_item_stats.get(authority.id, 0)
+        row.flag_count = flag_stats.get(authority.id, 0)
+        row.critical_flag_count = critical_stats.get(authority.id, 0)
+        row.latest_published = latest_published.get(authority.id)
+        rows.append(row)
+    return rows
 
 
 @router.get("/meta/counts", response_model=MetaCounts)

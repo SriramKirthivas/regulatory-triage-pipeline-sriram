@@ -44,3 +44,52 @@ parameter, and only `parse_date()` passes the date set.
 deduplication was the wrong instinct, because the two sets are only coincidentally
 similar. Shared constants quietly assert that two things are the same kind of thing.
 Here they were not.
+
+---
+
+## 2. A proxy prefix that swallowed a client-side route
+
+**What the AI produced.** The obvious Vite dev-server proxy config:
+
+```ts
+proxy: {
+  "/api": { target: "http://localhost:8000", changeOrigin: true },
+}
+```
+
+This is the snippet in every tutorial, and it worked fine for the whole first version
+of the app.
+
+**Why it was wrong.** Vite treats a plain string key as a **prefix**, not a path
+segment. When the console grew a sidebar route at `/api-health`, that path matched the
+`/api` prefix — so navigating to the API Health screen forwarded the *page request* to
+FastAPI, which had no such route, and returned 404 instead of the app.
+
+The same config had a second hole: the health endpoint is served at `/health`, outside
+`/api` entirely, so it was never proxied. `fetch("/health")` got Vite's `index.html`
+back with a 200, and `response.json()` choked on `<!doctype html>`. Both failures live
+only in the dev server — the production build and the API itself were fine — which is
+exactly the kind of bug that survives to a demo.
+
+**How I caught it.** I curled all nine routes rather than assuming they worked because
+the router config looked right. `/api-health` came back 404 while its eight siblings
+returned 200. One anomalous line in a list of nine.
+
+**The fix.** Anchored regex patterns, which Vite uses for keys beginning with `^`:
+
+```ts
+proxy: {
+  "^/api/": { target, changeOrigin: true },
+  "^/health$": { target, changeOrigin: true },
+}
+```
+
+`^/api/` requires the trailing slash, so `/api-health` no longer matches, and `/health`
+is proxied explicitly.
+
+**The lesson.** Both of these bugs are the same shape: a rule that looks like it names
+a *category* actually matches on a *string*. `_NULLISH` treated "the word pending" as
+"an absent value"; `"/api"` treated "starts with these four characters" as "is an API
+call". AI-generated code is fluent at the common case and silent about where the
+boundary of the pattern actually sits — so the thing worth checking is never whether
+the happy path works, it is what else the rule quietly captures.

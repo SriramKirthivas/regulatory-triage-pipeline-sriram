@@ -17,7 +17,9 @@ from .models import (
     DirectiveStatus,
     FlagIssue,
     FlagSeverity,
+    FlagSource,
     Priority,
+    TriageStatus,
 )
 
 
@@ -40,12 +42,18 @@ class AuthorityOut(ORMModel):
 
 class FlagOut(ORMModel):
     id: int
+    directive_id: int
     action_item_id: int | None
     field: str
     issue: FlagIssue
     severity: FlagSeverity
     message: str
     raw_value: str | None
+    source: FlagSource
+    detected_at: datetime
+    resolved_at: datetime | None
+    resolved_by: str | None
+    resolution_note: str | None
 
 
 class StatusChangeOut(ORMModel):
@@ -80,6 +88,7 @@ class FlagSummary(BaseModel):
     critical: int = 0
     warning: int = 0
     info: int = 0
+    open: int = 0
     max_severity: FlagSeverity | None = None
 
 
@@ -98,9 +107,14 @@ class DirectiveOut(ORMModel):
     action_items: list[ActionItemOut] = []
     flags: list[FlagOut] = []
 
-    # Computed in the router; not columns.
+    # Derived in the router; not columns. See app/rollup.py for the definitions.
     flag_summary: FlagSummary = FlagSummary()
     open_item_count: int = 0
+    triage_status: TriageStatus = TriageStatus.NO_ITEMS
+    primary_owner: str | None = None
+    owner_count: int = 0
+    next_due_date: date | None = None
+    overdue: bool = False
 
 
 class DirectiveDetailOut(DirectiveOut):
@@ -123,24 +137,90 @@ class DirectiveListOut(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
-class ActionItemStatusUpdate(BaseModel):
-    """Payload for a triage decision.
+class ActionItemUpdate(BaseModel):
+    """Partial update for a triage decision.
+
+    Every field is optional so one endpoint serves "change status", "assign owner"
+    and "reprioritise" without three near-identical routes. Omitted fields are left
+    alone; only `status` runs through the transition guard.
 
     `note` is length-capped rather than unbounded text: this is an audit record,
     and audit records that accept arbitrary payloads become a storage problem.
     """
 
-    status: ActionItemStatus
+    model_config = ConfigDict(extra="forbid")
+
+    status: ActionItemStatus | None = None
+    owner: str | None = Field(default=None, max_length=120)
+    priority: Priority | None = None
+    due_date: date | None = None
     note: str | None = Field(default=None, max_length=400)
     changed_by: str = Field(default="compliance.officer", max_length=120)
 
-    @field_validator("note")
+    @field_validator("note", "owner")
     @classmethod
-    def blank_note_is_none(cls, v: str | None) -> str | None:
+    def blank_is_none(cls, v: str | None) -> str | None:
         if v is None:
             return None
         cleaned = v.strip()
         return cleaned or None
+
+
+class ActionItemCreate(BaseModel):
+    """Create work against a directive.
+
+    Note the asymmetry with ingestion: data arriving from a *feed* is coerced and
+    flagged, but data a human types here is validated strictly and rejected. We
+    cannot go back and ask a regulator what they meant; we can ask the officer.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=3, max_length=390)
+    description: str | None = Field(default=None, max_length=4000)
+    owner: str | None = Field(default=None, max_length=120)
+    priority: Priority = Priority.MEDIUM
+    due_date: date | None = None
+
+    @field_validator("title")
+    @classmethod
+    def title_must_have_content(cls, v: str) -> str:
+        cleaned = " ".join(v.split())
+        if len(cleaned) < 3:
+            raise ValueError("Title must contain at least 3 non-whitespace characters.")
+        return cleaned
+
+
+class FlagCreate(BaseModel):
+    """An officer raising a defect the pipeline could not detect."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    field: str = Field(default="record", max_length=80)
+    issue: FlagIssue
+    severity: FlagSeverity = FlagSeverity.WARNING
+    message: str = Field(min_length=3, max_length=400)
+    action_item_id: int | None = None
+    raised_by: str = Field(default="compliance.officer", max_length=120)
+
+
+class FlagResolve(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    resolution_note: str | None = Field(default=None, max_length=400)
+    resolved_by: str = Field(default="compliance.officer", max_length=120)
+
+
+class RevalidateResult(BaseModel):
+    """Outcome of re-running the ingest pipeline over a stored raw payload."""
+
+    directive_id: int
+    previous_flag_count: int
+    current_flag_count: int
+    added: int
+    cleared: int
+    manual_preserved: int
+    message: str
 
 
 # --------------------------------------------------------------------------- #
@@ -175,3 +255,76 @@ class SortKey(str, Enum):
     title = "title"
     authority = "authority"
     status = "status"
+    due_date = "due_date"
+
+
+# --------------------------------------------------------------------------- #
+# Cross-directive list views (Action Items and Data Quality screens)
+# --------------------------------------------------------------------------- #
+
+
+class DirectiveRef(ORMModel):
+    """Just enough directive context to render a row without a second request."""
+
+    id: int
+    reference_code: str | None
+    title: str
+    authority_code: str
+
+
+class ActionItemRow(ActionItemOut):
+    directive: DirectiveRef
+    overdue: bool = False
+    flag_count: int = 0
+
+
+class ActionItemListOut(BaseModel):
+    items: list[ActionItemRow]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+
+
+class FlagRow(FlagOut):
+    directive: DirectiveRef
+    action_item_title: str | None = None
+
+
+class FlagListOut(BaseModel):
+    items: list[FlagRow]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+
+
+class AuthorityRow(AuthorityOut):
+    """Authority with the portfolio stats the Authorities screen ranks by."""
+
+    directive_count: int = 0
+    action_item_count: int = 0
+    open_action_items: int = 0
+    flag_count: int = 0
+    critical_flag_count: int = 0
+    latest_published: date | None = None
+
+
+# --------------------------------------------------------------------------- #
+# Operational health
+# --------------------------------------------------------------------------- #
+
+
+class TableStat(BaseModel):
+    table: str
+    rows: int
+
+
+class HealthOut(BaseModel):
+    status: str
+    database: str
+    latency_ms: float | None = None
+    version: str
+    checked_at: datetime
+    tables: list[TableStat] = []
+    ingest: dict[str, int] = {}
