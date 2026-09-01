@@ -113,8 +113,19 @@ def counts(db: Session = Depends(get_db)) -> MetaCounts:
         )
         or 0
     )
+    # Flag aggregates count UNRESOLVED issues only.
+    #
+    # These drive the nav badge, the filter chips and the Data Quality tiles, all of
+    # which answer "what still needs attention". Counting acknowledged flags here
+    # would make the tiles disagree with the Open tab the moment anyone
+    # acknowledges something — the totals would stay put while the list shrank.
+    open_flags = DataQualityFlag.resolved_at.is_(None)
+
     flagged_directives = (
-        db.scalar(select(func.count(distinct(DataQualityFlag.directive_id)))) or 0
+        db.scalar(
+            select(func.count(distinct(DataQualityFlag.directive_id))).where(open_flags)
+        )
+        or 0
     )
 
     by_status = [
@@ -130,6 +141,7 @@ def counts(db: Session = Depends(get_db)) -> MetaCounts:
         CountBucket(key=severity.value, label=_label(severity.value), count=count)
         for severity, count in db.execute(
             select(DataQualityFlag.severity, func.count(DataQualityFlag.id))
+            .where(open_flags)
             .group_by(DataQualityFlag.severity)
             .order_by(func.count(DataQualityFlag.id).desc())
         )
@@ -149,6 +161,7 @@ def counts(db: Session = Depends(get_db)) -> MetaCounts:
         CountBucket(key=issue.value, label=_label(issue.value), count=count)
         for issue, count in db.execute(
             select(DataQualityFlag.issue, func.count(DataQualityFlag.id))
+            .where(open_flags)
             .group_by(DataQualityFlag.issue)
             .order_by(func.count(DataQualityFlag.id).desc())
         )

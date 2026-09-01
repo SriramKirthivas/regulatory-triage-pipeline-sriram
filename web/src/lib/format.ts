@@ -1,9 +1,16 @@
 /** Presentation helpers. ISO dates are kept ISO — dense and unambiguous. */
 
+/**
+ * SCREAMING_SNAKE_CASE -> "Title Case".
+ *
+ * Uppercases the first letter rather than assuming the caller passed an already
+ * capitalised enum value — passing a plain lowercase word used to render it
+ * unchanged, which put a lowercase button label in the UI.
+ */
 export const label = (value: string): string =>
   value
     .split("_")
-    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
 
 export function initials(name: string | null): string {

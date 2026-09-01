@@ -15,7 +15,7 @@ import {
   useToast,
 } from "../components/ui";
 import { exportCsv } from "../lib/exportCsv";
-import { formatDateTime, label } from "../lib/format";
+import { formatDateTime } from "../lib/format";
 
 /**
  * Data Quality — the corrupt-record register.
@@ -198,9 +198,9 @@ export function DataQualityPage() {
                 <col style={{ width: 186 }} />
                 <col style={{ width: 132 }} />
                 <col />
-                <col style={{ width: 148 }} />
-                <col style={{ width: 78 }} />
-                <col style={{ width: 158 }} />
+                <col style={{ width: 150 }} />
+                <col style={{ width: 84 }} />
+                <col style={{ width: 186 }} />
               </colgroup>
               <thead>
                 <tr>
@@ -290,7 +290,7 @@ function FlagTableRow({
             </button>
           ) : (
             <button className="btn sm" disabled={busy} onClick={onResolve}>
-              <Icons.check /> {label("acknowledge")}
+              <Icons.check /> Acknowledge
             </button>
           )}
           <button className="btn sm" onClick={onOpen}>

@@ -188,14 +188,14 @@ export function ActionItemsPage() {
           ) : (
             <table>
               <colgroup>
-                <col />
-                <col style={{ width: 150 }} />
-                <col style={{ width: 66 }} />
-                <col style={{ width: 128 }} />
-                <col style={{ width: 92 }} />
-                <col style={{ width: 128 }} />
-                <col style={{ width: 132 }} />
-                <col style={{ width: 92 }} />
+                <col style={{ minWidth: 240 }} />
+                <col style={{ width: 142 }} />
+                <col style={{ width: 74 }} />
+                <col style={{ width: 152 }} />
+                <col style={{ width: 84 }} />
+                <col style={{ width: 108 }} />
+                <col style={{ width: 134 }} />
+                <col style={{ width: 96 }} />
               </colgroup>
               <thead>
                 <tr>
@@ -279,9 +279,11 @@ function ItemRow({
       </td>
       <td>
         {row.due_date ? (
-          <span className={row.overdue ? "overdue mono" : "mono"}>
+          <span
+            className={row.overdue ? "overdue mono" : "mono"}
+            title={`${row.due_date} · ${relativeDays(row.due_date)}`}
+          >
             {row.due_date}
-            <span className="cell-sub"> · {relativeDays(row.due_date)}</span>
           </span>
         ) : (
           <span className="faint small">no due date</span>

@@ -337,14 +337,28 @@ a {
 
 /* ---------------------------------------------------------------- main --- */
 
+/* Flex, not grid. Pages render a variable number of top-level children — some
+   have a PageHeader + Tabs + page, others only PageHeader + page. A fixed
+   two-row grid handed the 1fr to whichever child landed second, which squeezed
+   the tab strip and pushed the page body underneath it. Flex sizes each child by
+   its own content and lets exactly one of them grow. */
 .main {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   background: var(--bg);
 }
 
+.pagehead,
+.tabs,
+.toolbar,
+.chipbar {
+  flex: 0 0 auto;
+}
+
 .page {
+  flex: 1 1 auto;
   overflow-y: auto;
   min-height: 0;
   padding: 18px 24px 32px;
@@ -354,6 +368,7 @@ a {
   padding: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
 }
 
 /* ------------------------------------------------------------ pageheader - */
