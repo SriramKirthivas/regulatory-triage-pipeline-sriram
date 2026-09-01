@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: rtp_db
+    environment:
+      POSTGRES_USER: rtp
+      POSTGRES_PASSWORD: rtp
+      POSTGRES_DB: rtp
+    ports:
+      - "5433:5432"
+    volumes:
+      - rtp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rtp -d rtp"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./api
+    container_name: rtp_api
+    environment:
+      DATABASE_URL: postgresql+psycopg://rtp:rtp@db:5432/rtp
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      SEED_ON_STARTUP: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/srv
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  rtp_pgdata:
