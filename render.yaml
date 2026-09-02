@@ -8,11 +8,22 @@
 # seeds it (SEED_ON_STARTUP), so there is no separate migration or seed step.
 # Seeding is idempotent — redeploys leave existing triage decisions alone.
 
+# REGIONS MUST MATCH between the database and the service.
+#
+# Render injects the database's *internal* hostname (dpg-xxxxx-a, with no domain
+# suffix). Internal DNS is per-region, so a service in one region cannot resolve
+# a database in another — it fails with "Name or service not known" at the first
+# connection, which happens during startup.
+#
+# Leaving `region` off a resource does not inherit it from the blueprint; it
+# defaults to Oregon. Both are pinned explicitly below so they cannot drift.
+
 databases:
   - name: artixio-db
     databaseName: rtp
     user: rtp
     plan: free
+    region: frankfurt
 
 services:
   - type: web

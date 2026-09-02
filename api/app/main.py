@@ -22,13 +22,53 @@ logger = logging.getLogger("rtp")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
 
+def wait_for_database(attempts: int = 6, base_delay: float = 1.5) -> bool:
+    """Poll the database until it answers, with linear backoff.
+
+    A managed Postgres is not always accepting connections the moment the
+    container starts — it may still be provisioning, waking, or failing over.
+    Without this the first query raises and the process exits, which a platform
+    reads as a crash and retries, producing a loop that looks like a broken image
+    rather than a database that was briefly unavailable.
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            if attempt > 1:
+                logger.info("Database reachable after %s attempts.", attempt)
+            return True
+        except Exception as exc:  # noqa: BLE001 - any driver error means "not yet"
+            logger.warning(
+                "Database not reachable (attempt %s/%s): %s", attempt, attempts, exc
+            )
+            if attempt < attempts:
+                time.sleep(base_delay * attempt)
+    return False
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Create the schema and, if configured, seed on first boot.
 
     Auto-seeding exists so a reviewer's first command is `docker compose up` and
     nothing else. It is idempotent — an already-populated database is left alone.
+
+    If the database cannot be reached the app still starts, in a degraded state.
+    A process that exits here tells you nothing except a stack trace in a deploy
+    log; a process that starts and reports "database: unreachable" on /health
+    tells you exactly what is wrong and stays up to keep saying so.
     """
+    if not wait_for_database():
+        logger.error(
+            "Starting WITHOUT a database. /health will report degraded. "
+            "On a hosted platform the usual cause is the database and the service "
+            "sitting in different regions, which makes the internal hostname "
+            "unresolvable."
+        )
+        yield
+        return
+
     Base.metadata.create_all(engine)
 
     if settings.seed_on_startup:

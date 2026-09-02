@@ -110,6 +110,8 @@ Four things would have failed on a hosted platform, each of them quietly:
 | Bare `postgresql://` picks psycopg2 | Only psycopg v3 is in `requirements.txt` | Same rewrite names the driver explicitly |
 | Dockerfile hardcoded port 8000 | Render assigns `$PORT`; the app would start, bind the wrong port, and fail health checks with a clean log | `CMD` uses shell form and `${PORT:-8000}`, so compose is unaffected |
 | `allow_credentials=True` with `origins=["*"]` | Browsers reject that combination outright — every request fails client-side with nothing on the server | Set to `False`; this API sends no cookies and reads no auth header |
+| Database and service in different regions | Render injects the database's *internal* hostname, and internal DNS is per-region. The service cannot resolve it and dies during startup with `Name or service not known` | Both resources pin `region: frankfurt` in `render.yaml`; omitting `region` defaults to Oregon rather than inheriting |
+| An unreachable database killed the process | `Application startup failed. Exiting.` — the platform reads that as a crash and retries, so a transient database problem looks like a broken image | Startup polls the database with backoff, then starts degraded. `/health` reports `database: unreachable` and stays up to say so |
 
 ### Free-tier caveats worth knowing before you share the link
 
