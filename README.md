@@ -280,10 +280,12 @@ client would create two sources of truth that drift apart.
 
 ## The interface
 
-A calm, light enterprise console: white surfaces, neutral slate text, hairline
-borders, restrained shadows, one muted blue accent. Fixed left sidebar, underlined
-tabs, dense tables. Built for someone processing a queue for hours, not admiring a
-dashboard for thirty seconds.
+The **"Regulatory Atlas"** design language, implemented from the Kombai canvas in
+`.kombai/canvas/`: a deep teal sidebar against an off-white workspace, marine blue
+for action, 2px radii, notched control corners, monospace column labels, grid-ruled
+tables and a numbered navigation index. It reads as an institutional register
+rather than a consumer dashboard — which is the right register for a compliance
+tool. IBM Plex Sans and Mono, with system fallbacks if the webfont is unavailable.
 
 **Screens and routes**
 
@@ -301,11 +303,12 @@ dashboard for thirty seconds.
 
 **Design rules held throughout**
 
-- **Verified contrast, not assumed contrast.** Every text/background pair in the
-  system was checked against WCAG AA — 24 pairs, all passing (body text 16.9:1,
-  secondary 6.2:1, the dimmest tertiary 4.9:1). Control borders clear the 3:1
-  non-text threshold, because a white input on a near-white page has no fill
-  contrast and the border is the only thing identifying it.
+- **Verified contrast, not assumed contrast.** Every text/background pair was
+  measured against WCAG AA — 34 pairs, all passing (body 12.9:1, secondary 6.1:1,
+  tertiary 4.8:1, sidebar text on teal 9.6:1). The canvas's own tertiary grey
+  measured 3.4:1 and failed, so it was darkened rather than copied; control borders
+  clear the 3:1 non-text threshold because a white input on an off-white page has
+  no fill contrast and the border is the only thing identifying the control.
 - **Meaning is never carried by colour alone.** Severity always ships with a word or
   letter (`CRITICAL`, `2C 1W`); the coloured row gutter is redundant with the
   Severity column, never the sole signal. Active nav uses tint *plus* weight *plus*

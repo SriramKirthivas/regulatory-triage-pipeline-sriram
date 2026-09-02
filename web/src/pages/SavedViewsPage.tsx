@@ -34,6 +34,7 @@ export function SavedViewsPage() {
     <>
       <PageHeader
         title="Saved Views"
+        eyebrow="View index · stored filter sets"
         subtitle="Stored filter sets for the regulatory update queue"
         actions={
           <button className="btn primary" onClick={() => navigate("/updates")}>

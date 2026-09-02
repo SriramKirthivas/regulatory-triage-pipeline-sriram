@@ -111,6 +111,7 @@ export function ActionItemsPage() {
     <>
       <PageHeader
         title="Action Items"
+        eyebrow="Work register · assignment and resolution"
         subtitle="Assigned work and resolution tracking across all directives"
         actions={
           <button

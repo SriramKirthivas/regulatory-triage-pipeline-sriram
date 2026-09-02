@@ -28,6 +28,7 @@ export function ApiHealthPage() {
     <>
       <PageHeader
         title="API Health"
+        eyebrow="Service report · backend and database"
         subtitle="Backend service and database status"
         actions={
           <button

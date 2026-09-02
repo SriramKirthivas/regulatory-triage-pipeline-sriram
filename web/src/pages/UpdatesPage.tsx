@@ -219,6 +219,7 @@ export function UpdatesPage() {
     <>
       <PageHeader
         title="Regulatory Updates"
+        eyebrow="Source register · incoming regulatory intelligence"
         subtitle="Triage and manage incoming regulatory intelligence"
         actions={
           <>

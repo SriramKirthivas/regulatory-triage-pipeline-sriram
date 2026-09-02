@@ -40,6 +40,7 @@ export function AuthoritiesPage() {
     <>
       <PageHeader
         title="Regulatory Authorities"
+        eyebrow="Issuing bodies · portfolio and workload"
         subtitle="Issuing bodies and the volume of work each one generates"
         actions={
           <button

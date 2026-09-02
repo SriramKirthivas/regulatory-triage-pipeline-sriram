@@ -61,6 +61,7 @@ export function DirectivesPage() {
     <>
       <PageHeader
         title="Compliance Directives"
+        eyebrow="Document library · lifecycle register"
         subtitle="Every directive on record, grouped by lifecycle state"
         actions={
           <button

@@ -96,6 +96,7 @@ export function DataQualityPage() {
     <>
       <PageHeader
         title="Data Quality"
+        eyebrow="Exception register · ingest validation findings"
         subtitle="Corrupt or invalid records caught by the ingestion pipeline"
         actions={
           <button

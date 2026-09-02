@@ -63,7 +63,8 @@ export function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Settings" subtitle="Configuration and user preferences" />
+      <PageHeader title="Settings"
+        eyebrow="Configuration · preferences and rules" subtitle="Configuration and user preferences" />
 
       <Tabs
         tabs={[
