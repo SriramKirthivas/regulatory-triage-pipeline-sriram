@@ -56,10 +56,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# allow_credentials is False deliberately. This API sends no cookies and reads no
+# Authorization header, and the CORS spec forbids pairing credentials with a
+# wildcard origin — browsers reject the response outright. Leaving it True would
+# mean a CORS_ORIGINS="*" deployment failed every request with an opaque console
+# error rather than a server-side one.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

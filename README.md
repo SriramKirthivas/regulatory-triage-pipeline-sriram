@@ -74,6 +74,57 @@ Change the left-hand side of the port mappings in `docker-compose.yml`
 
 ---
 
+## Deploying (Render + Vercel)
+
+Optional — the assignment only asks for a repo you can run locally. `render.yaml`
+and `web/vercel.json` are committed so a live copy takes a few minutes.
+
+**1 · API and database on Render.** Dashboard → New → Blueprint → pick this repo.
+Render reads `render.yaml`, creates the Postgres instance and the API, and wires
+`DATABASE_URL` between them. The schema is created and seeded on first boot, so
+there is no separate migration step. Note the service URL it gives you.
+
+**2 · Frontend on Vercel.** New Project → import the repo → set **Root Directory
+to `web`**. Before deploying, replace `artixio-api.onrender.com` in
+`web/vercel.json` with your actual Render URL — that rewrite proxies `/api/*` and
+`/health` through Vercel, so the browser only ever talks to one origin and CORS
+never enters the picture.
+
+<details>
+<summary><b>Calling the API directly instead of proxying</b></summary>
+
+Set `VITE_API_URL=https://your-api.onrender.com` in Vercel's environment
+variables and delete the two API rewrites from `vercel.json`. You must then set
+`CORS_ORIGINS` on Render to your Vercel origin. The proxy route above avoids all
+of this, which is why it is the default.
+
+</details>
+
+### What had to change to make this deployable
+
+Four things would have failed on a hosted platform, each of them quietly:
+
+| Problem | Why it fails | Fix |
+|---|---|---|
+| Render supplies `postgres://…` | SQLAlchemy 2 removed that alias; the engine raises at import, so the process dies before logging anything | `config.py` rewrites the scheme to `postgresql+psycopg://` — covered by `tests/test_config.py` |
+| Bare `postgresql://` picks psycopg2 | Only psycopg v3 is in `requirements.txt` | Same rewrite names the driver explicitly |
+| Dockerfile hardcoded port 8000 | Render assigns `$PORT`; the app would start, bind the wrong port, and fail health checks with a clean log | `CMD` uses shell form and `${PORT:-8000}`, so compose is unaffected |
+| `allow_credentials=True` with `origins=["*"]` | Browsers reject that combination outright — every request fails client-side with nothing on the server | Set to `False`; this API sends no cookies and reads no auth header |
+
+### Free-tier caveats worth knowing before you share the link
+
+- Render free web services **sleep after 15 minutes idle**. The first request
+  after that takes roughly 50 seconds while the container wakes, and the UI will
+  sit in its loading state throughout. Load the page once before demoing it.
+- Render's free Postgres **expires after 30 days**. Fine for a submission window,
+  not for anything longer.
+- The deployed database is seeded but otherwise shared — anyone with the link can
+  change statuses. That is the intended demo behaviour; reseed with
+  `docker compose exec api python -m app.seed.seed --reset` locally, or from
+  Render's shell, to reset it.
+
+---
+
 ## The database schema
 
 Five tables. Three model the regulatory domain, and two exist because the assignment's

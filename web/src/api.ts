@@ -258,8 +258,20 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Where the API lives.
+ *
+ * Empty by default, so every request stays same-origin: in dev the Vite proxy
+ * forwards it, and in production a Vercel rewrite forwards it. Same-origin means
+ * no CORS preflight and no origin allowlist to keep in sync.
+ *
+ * Set VITE_API_URL at build time to call a different host directly instead — the
+ * API's CORS_ORIGINS must then include the frontend's origin.
+ */
+const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
   });

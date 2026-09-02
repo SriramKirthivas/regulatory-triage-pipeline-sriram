@@ -1,0 +1,41 @@
+# Render blueprint — provisions the Postgres instance and the API together.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo.
+# Render reads this file, creates both services, and wires DATABASE_URL from the
+# database into the API automatically.
+#
+# The database is created empty. On first boot the API creates the schema and
+# seeds it (SEED_ON_STARTUP), so there is no separate migration or seed step.
+# Seeding is idempotent — redeploys leave existing triage decisions alone.
+
+databases:
+  - name: artixio-db
+    databaseName: rtp
+    user: rtp
+    plan: free
+
+services:
+  - type: web
+    name: artixio-api
+    runtime: docker
+    rootDir: api
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    envVars:
+      # Render supplies postgres://…; config.py rewrites it to postgresql+psycopg://
+      # because SQLAlchemy 2 dropped the bare postgres:// alias.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: artixio-db
+          property: connectionString
+      - key: SEED_ON_STARTUP
+        value: "true"
+      # Only needed if the frontend calls this host directly (VITE_API_URL).
+      # With the Vercel rewrite in web/vercel.json every request is same-origin
+      # and CORS never comes into play, so this is a harmless default.
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: PYTHONUNBUFFERED
+        value: "1"
