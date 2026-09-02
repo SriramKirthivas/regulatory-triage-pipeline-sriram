@@ -331,12 +331,12 @@ client would create two sources of truth that drift apart.
 
 ## The interface
 
-The **"Regulatory Atlas"** design language, implemented from the Kombai canvas in
-`.kombai/canvas/`: a deep teal sidebar against an off-white workspace, marine blue
-for action, 2px radii, notched control corners, monospace column labels, grid-ruled
-tables and a numbered navigation index. It reads as an institutional register
-rather than a consumer dashboard — which is the right register for a compliance
-tool. IBM Plex Sans and Mono, with system fallbacks if the webfont is unavailable.
+A slate-and-blue console: dark slate sidebar against a light slate workspace, blue
+for action and selection, 6px radii, DM Sans for display type, Inter for body and
+JetBrains Mono for codes. Implemented from a Figma Make prototype of this same
+brief, whose signature move is kept — **rows carrying unresolved data-quality
+issues are tinted and edge-marked**, so a dirty record is visible while scanning
+rather than only on reaching the Validation column.
 
 **Screens and routes**
 
@@ -355,11 +355,13 @@ tool. IBM Plex Sans and Mono, with system fallbacks if the webfont is unavailabl
 **Design rules held throughout**
 
 - **Verified contrast, not assumed contrast.** Every text/background pair was
-  measured against WCAG AA — 34 pairs, all passing (body 12.9:1, secondary 6.1:1,
-  tertiary 4.8:1, sidebar text on teal 9.6:1). The canvas's own tertiary grey
-  measured 3.4:1 and failed, so it was darkened rather than copied; control borders
-  clear the 3:1 non-text threshold because a white input on an off-white page has
-  no fill contrast and the border is the only thing identifying the control.
+  measured against WCAG AA — 32 pairs, all passing (body 17.9:1, secondary 7.6:1,
+  tertiary 5.0:1, sidebar idle text 7.0:1). Five of the prototype's own values
+  failed and were corrected rather than copied: its sidebar labels measured 3.8:1,
+  its control borders 2.8:1, and its amber row marker 2.1:1 against the very tint
+  it sits on. Control borders clear the 3:1 non-text threshold because a white
+  input on a slate page has almost no fill contrast, so the border is the only
+  thing identifying the control.
 - **Meaning is never carried by colour alone.** Severity always ships with a word or
   letter (`CRITICAL`, `2C 1W`); the coloured row gutter is redundant with the
   Severity column, never the sole signal. Active nav uses tint *plus* weight *plus*

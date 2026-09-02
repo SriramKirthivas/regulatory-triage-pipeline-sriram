@@ -520,7 +520,10 @@ function UpdateRow({
   const due = relativeDays(row.next_due_date);
   return (
     <tr
-      className="clickable"
+      /* `flagged` tints the whole row when unresolved issues exist, so a dirty
+         record is visible while scanning rather than only on reaching the
+         Validation column. */
+      className={row.flag_summary.open > 0 ? "clickable flagged" : "clickable"}
       aria-selected={selected}
       onClick={onSelect}
       onDoubleClick={onOpen}
