@@ -1,155 +1,96 @@
-# Loom script — 5 minutes
+# Loom script — max 5 minutes
 
-*Italics* are what to do, not what to say.
-Setup commands are at the bottom. Reseed before you record.
+The brief asks the video to address exactly three things: **the Schema**, **the
+Edge Cases**, **the AI Workflow**. That's all this covers.
 
-About 780 spoken words — roughly 5:10 at a normal presenting pace. Cutting the
-three below takes it comfortably under five minutes, in this order:
+~480 spoken words, about 3:30 talking — roughly 4:30 of video once you allow for
+clicking. *Italics* are what to do, not what to say.
 
-1. "It's also the one status the application never assigns…" (edge cases)
-2. The five-spellings list — just say "five different spellings" (edge cases)
-3. The reference-codes half of "Two related decisions" (schema)
-
-Never cut the AI Workflow section — it's one of the three things the brief
-explicitly asks for.
+Setup is at the bottom. Reseed before you record.
 
 ---
 
-### 0:00 · What it is (20s)
-
-*Overview page.*
-
-"This is a triage tool for a regulatory compliance officer. Eight medicines
-regulators — the FDA, the EMA and so on — publish directives, the rules companies
-must follow. Each directive creates action items — the tasks someone must
-complete against a deadline.
-
-The difficulty is that the incoming data is unreliable — misspelled status codes,
-missing dates, raw HTML in titles. The system corrects what it can verify,
-isolates what it can't, and returns a ranked queue. Currently 44 directives, 184
-action items, 60 needing review."
-
----
-
-### 0:20 · The Schema (70s)
+### 1 · The Schema (60s)
 
 *`backend/app/models.py`.*
 
-"Three tables. An authority — a regulator — issues directives, and each directive
-generates action items. Action items belong to a directive rather than one flat
-task list, because an item's urgency depends on which regulator issued it and
-when the rule takes effect.
+"Three tables: an authority issues directives, and each directive generates
+action items. Items hang off the directive rather than sitting in one flat task
+list, because urgency depends on who issued it and when the rule takes effect.
 
-The decision I'd most like to explain: **the status column is stored as free
-text, rather than a fixed list of values enforced by the database.**
+The main decision is that status is stored as free text, not a fixed list the
+database enforces. If the database only accepted valid values, a regulator
+sending `RESOLVD` would fail the import outright — and the officer would never
+learn their feed has a problem. So I store what arrived and interpret it on read.
+The database is an accurate record of what was sent; the application decides what
+it means.
 
-Constraining it looks safer. But if the database accepts only four exact values
-and a regulator sends `RESOLVD` with a typo, the import fails outright — and the
-officer never learns their data source has a problem. So the system stores what
-arrived and interprets it on the way out. The database stays an accurate record
-of what was sent; the application decides what it means.
-
-Two related decisions. Reference codes aren't unique, because registers do
-publish the same code twice — that's a finding, not a reason to reject the
-record. And dates may be empty, because a default would mean inventing a
-compliance deadline."
+Same reasoning twice more. Reference codes aren't unique, because registers do
+publish duplicates — that's a finding, not a crash. And dates can be empty,
+because defaulting one would invent a compliance deadline."
 
 ---
 
-### 1:30 · The Edge Cases (105s)
+### 2 · The Edge Cases (100s)
 
-*Triage. Type `HPRA/GMP/2025/100` into the search box — six rows.*
+*Triage. Search `HPRA/GMP/2025/100` — six rows.*
 
-"Now what it catches. I introduced fifteen categories of defect, and the system
-is never told what to look for — it evaluates every record as it reads it. The
-principle: never fail, never accept something wrong silently, never discard a
-record.
+"I seeded fifteen categories of defect. Nothing tells the app what to look for —
+it checks every record as it reads it.
 
-These six action items belong to one directive. Five are flagged 'code
-normalised' — the regulator sent five different spellings of a status: `closed`,
-`wip`, `RESOLVD`, `Pending` with a trailing space, `In-Progress` with a hyphen.
-All recognisable, so all repaired automatically."
+These six action items are all one directive. Five are flagged 'code normalised':
+that regulator sent five different spellings of a status — `closed`, `wip`,
+`RESOLVD`, `Pending` with a trailing space, `In-Progress` with a hyphen. All
+recognisable, so all repaired."
 
 *Click row #1.*
 
-"You can still see exactly what arrived — stored as `RESOLVD`."
+"And you can still see what actually arrived — stored as `RESOLVD`."
 
-*Click row #4, the one marked Quarantined.*
+*Click row #4, marked Quarantined.*
 
-"This one's different. Its status arrived as `IN_LIMBO` — not a misspelling of
-any valid value, so there's no safe interpretation. It's marked quarantined: not
-deleted, not guessed at, held where a person can resolve it. What it can safely
-repair and what it can't are handled differently, and that distinction is the
-core of the design. It's also the one status the application never assigns
-itself; it only ever comes from incoming data."
+"This one arrived as `IN_LIMBO`. That's not a misspelling of anything valid, so
+there's no safe interpretation. It's quarantined — not deleted, not guessed at,
+held for a person to resolve."
 
-*Press `2` to repair it.*
+*Press `2`.*
 
-*Data quality tab.*
-
-"Everything it found is on one page — 228 records checked, 60 needing a decision,
-31 repaired automatically, fifteen rule types fired, each with the reason in
-plain English."
+"Which I can do here."
 
 *Directives → search `HC/PHA/2026/120` → open it.*
 
-"This is the case I'd highlight. The directive has been withdrawn, but it still
-has three open action items against it. Every record is individually valid — the
-problem only appears when you view them together, which is why the checks run
-across the whole dataset rather than record by record."
+"And this directive is withdrawn, but still has three open action items. Every
+record is individually valid — only the combination is wrong, which is why the
+checks run across the whole dataset rather than record by record."
 
 *`/docs` tab.*
 
-"Finally, reading is tolerant but writing is strict. A misspelled status is
-rejected. Quarantined is rejected, because that state is reserved for incoming
-data. And an item can't move from Blocked straight to Resolved — it has to be
-unblocked first."
+"Reading is tolerant; writing is strict. A misspelled status is rejected, and
+Blocked can't jump straight to Resolved."
 
 ---
 
-### 3:15 · The AI Workflow (70s)
+### 3 · The AI Workflow (60s)
 
-"One example of something going wrong. For the page transitions, the AI
-recommended a standard animation pattern straight from the library's
-documentation. It looked correct.
+"For the page transitions, the AI suggested a standard animation pattern straight
+from the library's documentation. It looked right.
 
-The symptom: after changing an item's status, navigation stopped working.
-Clicking a menu link updated the address bar and the highlighted tab, but the
-page content stayed put — permanently, until a reload.
+Then: after changing an item's status, navigation stopped working. The URL
+changed, the tab highlighted, but the page didn't move — permanently, until a
+reload.
 
-That pattern waits for the outgoing page to finish animating before displaying
-the next, so navigation had become dependent on an animation completing. The
-confirmation message shown after a status change is removed on a timer, and
-navigating while one was visible put the timer and the animation in conflict. The
-animation never signalled it had finished, so the page never changed — which is
-why the fault surfaced only after doing real work.
+That pattern waits for the outgoing page to finish animating before showing the
+next one. The confirmation message is removed on a timer, so navigating while one
+was visible put the timer and the animation in conflict. The animation never
+reported finishing, so the page never changed. A message only appears after a
+status change — which is why it only broke once you'd done real work.
 
-I found it by scripting a browser to reproduce the sequence. My first two
-hypotheses were wrong; it reproduced only once I forced animations to run, which
-headless had been skipping.
+I found it by scripting a browser to reproduce the sequence. My first two guesses
+were wrong; it only reproduced once I forced animations on, which headless had
+been skipping.
 
-The fix was removing that wrapper. The lesson: the recommended pattern carried a
-dependency its documentation doesn't emphasise. A visual transition should never
-be able to prevent navigation."
-
----
-
-### 4:25 · Close (15s)
-
-"It's deployed as well — the API and database on Render, the frontend on Vercel.
-Thank you for watching."
-
----
-
-## Backup AI-workflow stories
-
-- **NUL byte in the seed.** Generated data put a `\x00` in a title; Postgres flat
-  out refuses that in text, so it crashed before a single row saved.
-- **Duplicate detection blamed the wrong row.** It picked the lowest id as the
-  original, so the *clean* record got flagged and the messy one looked fine.
-- **An animation overrode the row highlight.** Animating the background colour
-  leaves an inline style behind that beats the CSS class, so the selected row
-  lost its highlight after the first update.
+The fix was removing that wrapper. The lesson: the recommended pattern quietly
+made navigation depend on an animation finishing."
 
 ---
 
