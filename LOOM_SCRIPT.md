@@ -3,11 +3,11 @@
 *Italics* are what to do, not what to say.
 Setup commands are at the bottom. Reseed before you record.
 
-About 740 spoken words — roughly 5:00 at a normal presenting pace. If you run
-long, cut these three, in order:
+About 780 spoken words — roughly 5:10 at a normal presenting pace. Cutting the
+three below takes it comfortably under five minutes, in this order:
 
-1. "Others: a priority of zero…" — the extra defects (edge cases)
-2. "Unknown is also the one status…" (edge cases)
+1. "It's also the one status the application never assigns…" (edge cases)
+2. The five-spellings list — just say "five different spellings" (edge cases)
 3. The reference-codes half of "Two related decisions" (schema)
 
 Never cut the AI Workflow section — it's one of the three things the brief
@@ -21,8 +21,8 @@ explicitly asks for.
 
 "This is a triage tool for a regulatory compliance officer. Eight medicines
 regulators — the FDA, the EMA and so on — publish directives, the rules companies
-must follow. Each directive creates action items: the concrete tasks someone has
-to complete against a deadline.
+must follow. Each directive creates action items — the tasks someone must
+complete against a deadline.
 
 The difficulty is that the incoming data is unreliable — misspelled status codes,
 missing dates, raw HTML in titles. The system corrects what it can verify,
@@ -47,8 +47,7 @@ Constraining it looks safer. But if the database accepts only four exact values
 and a regulator sends `RESOLVD` with a typo, the import fails outright — and the
 officer never learns their data source has a problem. So the system stores what
 arrived and interprets it on the way out. The database stays an accurate record
-of what was sent; the application decides what it means. Anything written back is
-always correct.
+of what was sent; the application decides what it means.
 
 Two related decisions. Reference codes aren't unique, because registers do
 publish the same code twice — that's a finding, not a reason to reject the
@@ -59,45 +58,52 @@ compliance deadline."
 
 ### 1:30 · The Edge Cases (105s)
 
-*Triage. Press `f` for flagged only.*
+*Triage. Type `HPRA/GMP/2025/100` into the search box — six rows.*
 
-"Now what it catches. I introduced fifteen categories of defect, and the system is
-never told what to look for — it evaluates every record as it reads it. The
-principle: never fail, never accept something incorrect silently, never discard a
-record."
+"Now what it catches. I introduced fifteen categories of defect, and the system
+is never told what to look for — it evaluates every record as it reads it. The
+principle: never fail, never accept something wrong silently, never discard a
+record.
 
-*Click item #4.*
+These six action items belong to one directive. Five are flagged 'code
+normalised' — the regulator sent five different spellings of a status: `closed`,
+`wip`, `RESOLVD`, `Pending` with a trailing space, `In-Progress` with a hyphen.
+All recognisable, so all repaired automatically."
 
-"This item's status arrived as `IN_LIMBO`. That isn't a misspelling of any valid
-value, so there's no safe interpretation. It's isolated and marked unknown — not
-deleted, not guessed at, but held where a person can resolve it."
+*Click row #1.*
 
-*Press `2`.*
+"You can still see exactly what arrived — stored as `RESOLVD`."
 
-"Unknown is also the one status the application never assigns itself; it only
-comes from incoming data."
+*Click row #4, the one marked Quarantined.*
 
-*Click #1.*
+"This one's different. Its status arrived as `IN_LIMBO` — not a misspelling of
+any valid value, so there's no safe interpretation. It's marked quarantined: not
+deleted, not guessed at, held where a person can resolve it. What it can safely
+repair and what it can't are handled differently, and that distinction is the
+core of the design. It's also the one status the application never assigns
+itself; it only ever comes from incoming data."
 
-"Compare that with `RESOLVD` — clearly 'resolved' misspelled, so it's corrected
-automatically, and the original value stays visible. Defects it can safely repair
-and defects it can't are handled differently, and that distinction is the core of
-the design. Others: a priority of zero brought into range, control characters
-stripped from a title, a due date in 2099 flagged rather than deleted."
+*Press `2` to repair it.*
 
-*Data quality → the withdrawn directive HC/PHA/2026/120.*
+*Data quality tab.*
+
+"Everything it found is on one page — 228 records checked, 60 needing a decision,
+31 repaired automatically, fifteen rule types fired, each with the reason in
+plain English."
+
+*Directives → search `HC/PHA/2026/120` → open it.*
 
 "This is the case I'd highlight. The directive has been withdrawn, but it still
-has open action items against it. Every individual record is valid — the problem
-only appears when you view them together, which is why the checks run across the
-whole dataset rather than record by record."
+has three open action items against it. Every record is individually valid — the
+problem only appears when you view them together, which is why the checks run
+across the whole dataset rather than record by record."
 
 *`/docs` tab.*
 
 "Finally, reading is tolerant but writing is strict. A misspelled status is
-rejected. Unknown is rejected, because that state is reserved for incoming data.
-And an item can't move from Blocked straight to Resolved — it has to be unblocked
-first."
+rejected. Quarantined is rejected, because that state is reserved for incoming
+data. And an item can't move from Blocked straight to Resolved — it has to be
+unblocked first."
 
 ---
 
@@ -115,13 +121,12 @@ That pattern waits for the outgoing page to finish animating before displaying
 the next, so navigation had become dependent on an animation completing. The
 confirmation message shown after a status change is removed on a timer, and
 navigating while one was visible put the timer and the animation in conflict. The
-animation never signalled it had finished, so the page never changed. That
-message only appears when you change a status — which is exactly why the fault
-surfaced only after doing real work.
+animation never signalled it had finished, so the page never changed — which is
+why the fault surfaced only after doing real work.
 
 I found it by scripting a browser to reproduce the sequence. My first two
-hypotheses were wrong; it reproduced only once I forced animations to run,
-because the headless browser had been skipping them.
+hypotheses were wrong; it reproduced only once I forced animations to run, which
+headless had been skipping.
 
 The fix was removing that wrapper. The lesson: the recommended pattern carried a
 dependency its documentation doesn't emphasise. A visual transition should never
