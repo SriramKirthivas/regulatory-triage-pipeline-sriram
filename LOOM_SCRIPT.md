@@ -1,6 +1,6 @@
 # Loom script — 5 minutes
 
-Spoken lines only. *Italics* are what to do, not what to say.
+Say it in your own words. *Italics* are what to do, not what to say.
 Setup commands are at the bottom. Reseed before you record.
 
 ---
@@ -9,10 +9,12 @@ Setup commands are at the bottom. Reseed before you record.
 
 *Overview page.*
 
-"A regulatory triage pipeline. Directives from eight regulators arrive messy —
-typo status codes, missing dates, markup in titles. The backend repairs what it
-safely can, quarantines what it can't, and ranks the work that falls out.
-44 directives, 184 action items, 60 need review."
+"This is a triage tool for a compliance officer. Eight regulators publish rules,
+and those rules turn into actual work — things someone has to do, with deadlines.
+
+The catch is the data arrives messy: statuses spelled wrong, dates missing, HTML
+in the titles. So the app fixes what it safely can, sets aside what it can't, and
+hands back a ranked list. Right now, 44 rules, 184 tasks, 60 needing a human."
 
 ---
 
@@ -20,24 +22,24 @@ safely can, quarantines what it can't, and ranks the work that falls out.
 
 *`backend/app/models.py`.*
 
-"Three tables. An Authority issues Directives, each Directive generates Action
-Items. Items hang off directives because an item's urgency comes from its
-regulatory context — who issued it, and when it takes effect.
+"Three tables — a regulator issues rules, each rule creates tasks. Tasks hang
+off the rule rather than sitting in one flat to-do list, because how urgent a
+task is depends on who issued it and when it kicks in.
 
-The decision I'd defend hardest is at the top of this file: **status columns are
-plain TEXT, not Postgres enums.**
+The choice I'd most want to explain: **the status column is just text, not a
+fixed list of allowed values.**
 
-An enum rejects `RESOLVD` at insert time. That sounds like a win, but it means
-the bad value never reaches the application and the officer never learns their
-feed emits typos — the seed just crashes. Storing the raw value and normalising
-on read means the database is an honest record of what the regulator actually
-sent, and the API is the layer that enforces meaning. Writes only ever store
-canonical codes, so the mess never spreads.
+Locking it down feels safer. But if the database only accepts four perfect values
+and the regulator sends `RESOLVD` with a typo, the import fails. Nobody learns
+the feed has a problem — you just get an error and no data. So I store exactly
+what they sent and clean it up on the way out. The database stays an honest
+record of what arrived; the app decides what it means. Anything we save back is
+clean.
 
-Same reasoning twice more. `reference_code` is indexed but not unique — registers
-really do emit the same code twice, and a constraint turns a finding into a
-crash. And the dates are nullable on purpose: `NOT NULL` with a default would
-fabricate a compliance deadline, which is the worst thing this system could do."
+Two more like that. Reference codes aren't forced to be unique, because real
+registers do send the same code twice — worth flagging, not crashing over. And
+dates can be empty, because a default would mean inventing a compliance deadline.
+That's the most dangerous thing this could do."
 
 ---
 
@@ -45,85 +47,87 @@ fabricate a compliance deadline, which is the worst thing this system could do."
 
 *Triage. Press `f` for flagged only.*
 
-"Fifteen classes of defect planted. `triage.py` runs over every row on read.
-Three rules: never crash, never silently accept, never drop the row."
+"Let me show you what it catches. I planted fifteen kinds of bad data, and
+nothing tells the app what to look for. The rule is: never crash, never quietly
+accept something wrong, never throw a row away."
 
 *Click item #4.*
 
-"Its stored status is `IN_LIMBO` — not a typo of anything, so there's nothing
-safe to map it to. Quarantined as unknown. Not discarded, not guessed at —
-parked where a human can repair it."
+"This one came in as `IN_LIMBO`. That's not a misspelling of anything — I can't
+tell what they meant. So it's set aside and marked unknown. Not deleted, not
+guessed at, just parked where a person can fix it."
 
 *Press `2`.*
 
-"And unknown is the one status a client can't write. It's an inbound bucket only."
+"And unknown is the one state the app will never set itself. It only ever comes
+from bad input."
 
 *Click #1.*
 
-"`RESOLVD` **is** a recognisable typo, so it maps to resolved and gets flagged,
-with the raw value still shown. Repairable and unrepairable are treated
-differently — that's the whole distinction.
+"Compare that to `RESOLVD`. That obviously is 'resolved', misspelled — so it's
+fixed automatically, but you can still see what arrived. Things it can safely fix
+and things it can't are treated completely differently. That's the whole idea.
 
-Elsewhere: priority 0 clamped to 1, control characters stripped from a title,
-a due date in 2099 flagged rather than deleted."
+A few others: a priority of zero pulled back into range, junk characters stripped
+from a title, a due date in 2099 flagged rather than deleted."
 
-*Data quality → the withdrawn directive HC/PHA/2026/120.*
+*Data quality → the withdrawn rule HC/PHA/2026/120.*
 
-"This is the one a per-row validator structurally cannot catch. The directive is
-withdrawn, but it still has open action items. Every row is individually valid —
-the combination is what's wrong."
+"My favourite. This rule was withdrawn — cancelled — but people are still
+working on tasks from it. Any single row looks completely fine. It's only wrong
+when you see them together, which is why the checking runs across the whole
+picture instead of row by row."
 
 *`/docs` tab.*
 
-"The read side is forgiving. The write side isn't. `RESOLVD` on write is a 422.
-`unknown` is a 422 — quarantine bucket. And Blocked straight to Resolved is a
-422, invalid transition. You have to unblock it first."
+"Reading is forgiving; writing isn't. Save a misspelled status, it refuses. Mark
+something unknown, it refuses — that's only for bad data coming in. And you can't
+jump from Blocked straight to Resolved. Unblock it first."
 
 ---
 
 ### 3:15 · The AI Workflow (70s)
 
-"For page transitions the AI suggested Framer Motion's `AnimatePresence` with
-`mode="wait"`. It's the documented pattern and it looked right.
+"For the page transitions the AI suggested a standard, straight-out-of-the-docs
+animation setup. Looked completely fine.
 
-The symptom was odd. After triaging an item, clicking any nav link stopped
-working. The URL changed, the highlight moved, the content stayed. Permanently,
-until a reload.
+Then this bug: after you changed a task's status, the menu stopped working. You'd
+click, the address bar would change, the tab would highlight — and the page just
+sat there. Permanently, until you reloaded.
 
-`mode="wait"` holds the incoming route unmounted until every motion component in
-the outgoing one reports its exit finished. So navigation depends on animation
-bookkeeping — and one stranded component strands the whole app. The culprit was
-the toast: it's dropped on a `setTimeout`, so navigating while one was on screen
-raced that timer against the exit. The toast left the list mid-exit, its callback
-never fired, the route swap never resumed. A status change is exactly what raises
-a toast — which is why it only ever broke *after* triaging something.
+That setting waits for the old page to finish fading out before showing the new
+one. So navigation quietly depended on an animation finishing. And the little
+confirmation popup disappears on a timer — navigate while it's still up, and the
+timer and the fade collide, the animation never reports back, and the page swap
+never happens. A popup only appears when you change a status, which is exactly
+why it only broke after you'd done some work.
 
-I pinned it down by scripting the browser with Playwright. My first two theories
-were wrong, and it only reproduced once I forced reduced-motion off, because
-headless was skipping the very animations that cause it.
+I found it by scripting the browser to click through automatically. My first two
+guesses were wrong — it only showed up once I forced animations on, because
+headless had been skipping them.
 
-The fix was dropping the wrapper. The lesson: the canonical pattern was
-load-bearing in a way its docs don't advertise. A cosmetic transition should
-never be able to wedge navigation."
+The fix was removing that wrapper. The lesson: it was the recommended pattern,
+and it was quietly holding up something important. A visual effect should never
+be able to break navigation."
 
 ---
 
 ### 4:25 · Close (15s)
 
-"Render for the API and Postgres, Vercel for the frontend. Thanks for watching."
+"It's deployed as well — API and database on Render, frontend on Vercel. Thanks
+for watching."
 
 ---
 
 ## Backup AI-workflow stories
 
-- **NUL byte in the seed.** Generated seed put `\x00` in a title; Postgres refuses
-  NUL in text columns, so it crashed before a row landed. Swapped to `\x1b`.
-- **Duplicate detection flagged the wrong row.** Picked the lowest id as owner of
-  a reference code, so the *clean* directive got flagged and the dirty one looked
-  fine. Fixed by ranking canonical codes first.
-- **Framer Motion row flash beat the selection colour.** `animate={{
-  backgroundColor }}` leaves an inline style that outranks the `.active` class.
-  Replaced with a CSS keyframe.
+- **NUL byte in the seed.** Generated data put a `\x00` in a title; Postgres flat
+  out refuses that in text, so it crashed before a single row saved.
+- **Duplicate detection blamed the wrong row.** It picked the lowest id as the
+  original, so the *clean* record got flagged and the messy one looked fine.
+- **An animation overrode the row highlight.** Animating the background colour
+  leaves an inline style behind that beats the CSS class, so the selected row
+  lost its highlight after the first update.
 
 ---
 
@@ -160,15 +164,15 @@ npm run dev
 `python3` here is 3.14 and psycopg won't install on it — use the 3.13 path above.
 Don't run `~/Downloads/artixio-triage`; it still has the navigation bug.
 
-Reseed right before recording, or the numbers below drift:
+Reseed right before recording, or the numbers drift:
 
 ```bash
 cd ~/Documents/Artixio-Assignment/regulatory-triage-pipeline-sriram/backend
 .venv/bin/python seed.py
 ```
 
-Clean numbers: 8 authorities · 44 directives · 184 items · 60 need review ·
-31 warnings · 15 anomaly classes. Chips: Pending 58 · In progress 58 ·
+Clean numbers: 8 regulators · 44 rules · 184 tasks · 60 need review ·
+31 warnings · 15 kinds of bad data. Chips: Pending 58 · In progress 58 ·
 Blocked 26 · Resolved 41 · Quarantined 1.
 
 Have open: `localhost:5173` (~1500px wide), `localhost:8787/docs`,
