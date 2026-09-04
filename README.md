@@ -333,12 +333,19 @@ client would create two sources of truth that drift apart.
 
 ## The interface
 
-A slate-and-blue console: dark slate sidebar against a light slate workspace, blue
-for action and selection, 6px radii, DM Sans for display type, Inter for body and
-JetBrains Mono for codes. Implemented from a Figma Make prototype of this same
-brief, whose signature move is kept — **rows carrying unresolved data-quality
-issues are tinted and edge-marked**, so a dirty record is visible while scanning
-rather than only on reaching the Validation column.
+The **"Clinical Intelligence Slate"** design system, implemented from its Stitch
+specification: deep navy-slate surfaces, surgical emerald as the primary, clinical
+cyan for selection, amber for anomaly and red for failure. Hairline borders rather
+than shadows, tight 4px-grid geometry, Hanken Grotesk with JetBrains Mono for every
+identifier and datum. It reads as a mission-critical console, which is the right
+register for regulatory triage.
+
+Two things the mockups showed are **deliberately absent**: an AI confidence score
+and a cryptographic provenance seal. This system has no model and no hash chain,
+and rendering either would be claiming capability it does not have. The layout
+patterns they occupied carry data that genuinely exists — validation findings, the
+stored raw payload, and the status-change audit trail. Rows carrying unresolved
+issues are tinted and edge-marked in amber, per the design's anomaly row state.
 
 **Screens and routes**
 
@@ -357,13 +364,12 @@ rather than only on reaching the Validation column.
 **Design rules held throughout**
 
 - **Verified contrast, not assumed contrast.** Every text/background pair was
-  measured against WCAG AA — 32 pairs, all passing (body 17.9:1, secondary 7.6:1,
-  tertiary 5.0:1, sidebar idle text 7.0:1). Five of the prototype's own values
-  failed and were corrected rather than copied: its sidebar labels measured 3.8:1,
-  its control borders 2.8:1, and its amber row marker 2.1:1 against the very tint
-  it sits on. Control borders clear the 3:1 non-text threshold because a white
-  input on a slate page has almost no fill contrast, so the border is the only
-  thing identifying the control.
+  measured against WCAG AA — 23 pairs, all passing (body 14.4:1, secondary 7.6:1,
+  tertiary 4.6:1, emerald on canvas 10.9:1). Three of the design's own values
+  failed and were corrected rather than copied. Its hairline greys are fine as
+  dividers, which WCAG exempts, but they were also being used for the borders of
+  buttons and inputs — where the border is the only thing identifying the control
+  and must clear 3:1. Those now use a dedicated lighter token.
 - **Meaning is never carried by colour alone.** Severity always ships with a word or
   letter (`CRITICAL`, `2C 1W`); the coloured row gutter is redundant with the
   Severity column, never the sole signal. Active nav uses tint *plus* weight *plus*

@@ -58,9 +58,27 @@ export function TopNav() {
           <span className="topnav-mark">A</span>
           <span className="topnav-brand-text">
             <strong>Artixio</strong>
-            <span>Regulatory Intelligence</span>
+            <span>Regulatory Intelligence // Triage</span>
           </span>
         </NavLink>
+
+        {/* Live counters. Every figure comes from /api/meta/counts — the design's
+            mockups showed six-figure throughput numbers, but inventing those
+            would be claiming capability this system does not have. */}
+        <div className="topstats">
+          <div className="topstat">
+            <span className="topstat-k">Active Directives</span>
+            <span className="topstat-v">{counts?.total_directives ?? "—"}</span>
+          </div>
+          <div className="topstat alert">
+            <span className="topstat-k">Flagged Records</span>
+            <span className="topstat-v">{counts?.flagged_directives ?? "—"}</span>
+          </div>
+          <div className="topstat critical">
+            <span className="topstat-k">Open Items</span>
+            <span className="topstat-v">{counts?.open_action_items ?? "—"}</span>
+          </div>
+        </div>
 
         <div className="topnav-search">
           <Icons.search />
