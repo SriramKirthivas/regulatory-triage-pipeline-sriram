@@ -11,56 +11,82 @@ and 4 below: **the Schema**, **the Edge Cases**, **the AI Workflow**.
 
 ## 0 · Before you hit record
 
-### Two things that will bite you on camera
+### Four things that will bite you on camera
 
-**1. `python3` on this machine is 3.14, and the install fails on it.**
+**1. Do not paste `#` comments into your shell.** This machine's interactive zsh
+has `interactive_comments` off, so a trailing `# like this` is passed along as
+arguments rather than ignored. `docker compose up -d  # Postgres` becomes
+`docker compose up -d '#' Postgres …` and fails with **`no such service: #`** —
+Postgres never starts, and everything after it fails with `connection refused`.
+Every block below is therefore comment-free. Paste them as they are.
+
+**2. `python3` on this machine is 3.14, and the install fails on it.**
 `psycopg[binary]==3.2.3` has no 3.14 wheel — `pip install` dies with
 `No matching distribution found`. Use 3.13 explicitly. Render pins 3.13.4, so
 this is a local-only trap.
 
-**2. Don't run the copy in `~/Downloads/artixio-triage`.** That was the source
+**3. Free the ports first.** If a previous run is still alive, uvicorn exits with
+**`[Errno 48] Address already in use`** and you end up recording against a stale
+server. `pkill -f 'Downloads/artixio-triage'` does *not* catch a server started
+from the repo, so kill by port instead — that is what step 0 does.
+
+**4. Don't run the copy in `~/Downloads/artixio-triage`.** That was the source
 folder; the repo is now ahead of it and the Downloads copy still has the
-navigation bug (change a status, click any nav link, the app wedges). It also
-squats ports 8787/5173 and the `artixio_db` container name.
+navigation bug (change a status, click any nav link, the app wedges).
 
 ### Bring the stack up
 
+Step 0 — clear anything already running:
+
 ```bash
-# make sure the old Downloads copy isn't still running
-pkill -f 'Downloads/artixio-triage'
-docker rm -f artixio_db
+lsof -ti tcp:8787 | xargs kill -9 2>/dev/null
+lsof -ti tcp:5173 | xargs kill -9 2>/dev/null
+pkill -f 'Downloads/artixio-triage' 2>/dev/null
+docker rm -f artixio_db 2>/dev/null
+```
 
+Step 1 — Postgres 16 on `:5432`:
+
+```bash
 cd ~/Documents/Artixio-Assignment/regulatory-triage-pipeline-sriram
-docker compose up -d                      # Postgres 16 on :5432
+docker compose up -d
+until docker exec artixio_db pg_isready -U artixio -d regintel; do sleep 1; done
+```
 
+Step 2 — backend on `:8787`. `seed.py` drops, recreates and seeds:
+
+```bash
 cd backend
 /opt/homebrew/bin/python3.13 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 cp .env.example .env
-.venv/bin/python seed.py                  # drops, recreates, seeds
+.venv/bin/python seed.py
 .venv/bin/uvicorn app.main:app --port 8787 --reload
 ```
 
-In a second terminal:
+Step 3 — frontend on `:5173`, in a second terminal. Vite proxies `/api` to
+`:8787`:
 
 ```bash
 cd ~/Documents/Artixio-Assignment/regulatory-triage-pipeline-sriram/frontend
 npm install
-npm run dev                               # :5173, proxies /api to :8787
+npm run dev
 ```
 
-Check all three before recording:
+Step 4 — check both before recording. Each should print `{"ok":true}`; the
+second one proves the proxy works:
 
 ```bash
-curl localhost:8787/api/health            # {"ok":true}
-curl localhost:5173/api/health            # {"ok":true}  <- proxy works
+curl localhost:8787/api/health
+curl localhost:5173/api/health
 ```
 
 **Reseed immediately before you record.** Clicking around changes the data and
 the numbers below stop matching:
 
 ```bash
-cd backend && .venv/bin/python seed.py
+cd ~/Documents/Artixio-Assignment/regulatory-triage-pipeline-sriram/backend
+.venv/bin/python seed.py
 ```
 
 ### On screen
