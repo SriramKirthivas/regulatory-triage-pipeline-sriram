@@ -34,15 +34,25 @@ instance and the web service.
 
 `DATABASE_URL` is wired automatically from the database to the service.
 
-**Seed the database once, after the first successful deploy.** Open the
-`artixio-api` service -> **Shell**:
+**Seeding is automatic.** `SEED_ON_STARTUP=true` is set in `render.yaml`, so the
+service creates the schema on boot and populates it *only if it is empty*. That
+check makes redeploys safe: an already-populated database is left alone, so
+recorded triage decisions survive. The startup log says which branch it took:
 
-```bash
-python seed.py
+```
+Database was empty — schema created and seeded
+Database already has data — left untouched
 ```
 
-`seed.py` calls `drop_all()` before `create_all()`. It wipes every table. Never
-put it in the build command — it would reset the data on every deploy.
+This exists because Render's free tier has no shell, so `python seed.py` cannot
+be run by hand after a deploy. Locally it still can:
+
+```bash
+python seed.py     # drops, recreates and reseeds every table
+```
+
+Note the difference: `seed.py` calls `drop_all()` and wipes everything, which is
+why it is not what runs on boot. Never put it in the build command.
 
 Check it came up: `https://artixio-api.onrender.com/api/health` -> `{"ok":true}`
 

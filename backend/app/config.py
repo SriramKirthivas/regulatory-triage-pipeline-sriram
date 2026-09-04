@@ -6,6 +6,10 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg://artixio:artixio@localhost:5432/regintel"
     cors_origins: str = "http://localhost:5173"
+    # Render's free tier has no shell, so the database cannot be seeded by hand
+    # after a deploy. Turning this on makes the app create and populate the
+    # schema on boot if it is empty. Off locally, where `python seed.py` works.
+    seed_on_startup: bool = False
 
     @property
     def sqlalchemy_url(self) -> str:

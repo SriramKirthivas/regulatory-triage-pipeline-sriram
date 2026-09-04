@@ -1,3 +1,6 @@
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +11,31 @@ from .config import settings
 from .database import engine
 from .routers import action_items, anomalies, directives
 
-app = FastAPI(title="Artixio Regulatory Triage API", version="1.0.0")
+log = logging.getLogger("uvicorn.error")
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    if settings.seed_on_startup:
+        # Imported here rather than at module scope so the seed data is only
+        # pulled in when it is actually going to be used.
+        from seed import seed_if_empty
+
+        try:
+            log.info("SEED_ON_STARTUP is set; checking whether the database is empty")
+            if seed_if_empty():
+                log.info("Database was empty — schema created and seeded")
+            else:
+                log.info("Database already has data — left untouched")
+        except Exception:
+            # A failed seed must not stop the app from booting: /api/health stays
+            # up, the data routes 500, and the cause is in the logs. Dying here
+            # would put the service in a crash loop with nothing to inspect.
+            log.exception("Startup seeding failed; continuing without it")
+    yield
+
+
+app = FastAPI(title="Artixio Regulatory Triage API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

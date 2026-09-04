@@ -48,3 +48,8 @@ services:
         value: "https://regulatory-triage-pipeline-sriram.vercel.app"
       - key: PYTHONUNBUFFERED
         value: "1"
+      # The free tier has no shell, so `python seed.py` cannot be run after a
+      # deploy. The app seeds itself on boot instead, and only when the database
+      # is empty — redeploys leave recorded triage decisions alone.
+      - key: SEED_ON_STARTUP
+        value: "true"

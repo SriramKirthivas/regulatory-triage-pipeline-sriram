@@ -87,8 +87,9 @@ def d(days: int) -> date:
     return TODAY + timedelta(days=days)
 
 
-def main() -> None:
-    Base.metadata.drop_all(engine)
+def main(*, reset: bool = True) -> None:
+    if reset:
+        Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     db = SessionLocal()
 
@@ -199,6 +200,34 @@ def main() -> None:
     print("Injected anomalies:")
     for c in MESSY_CASES:
         print("  -", c)
+
+
+def seed_if_empty() -> bool:
+    """Create the schema and populate it only if it has no rows yet.
+
+    The deploy target is Render's free tier, which has no shell, so `python
+    seed.py` cannot be run by hand after a deploy. This runs on startup instead
+    (see SEED_ON_STARTUP) and, unlike main(), never drops anything — a redeploy
+    of a populated database leaves recorded triage decisions alone.
+
+    Returns True if it seeded, False if it found existing data.
+
+    The advisory lock serialises boots that overlap, so a second process cannot
+    read "empty" while the first is still inserting and seed a duplicate set.
+    """
+    Base.metadata.create_all(engine)
+
+    with engine.connect() as conn:
+        # Arbitrary constant; only has to be the same across instances of this app.
+        conn.execute(text("select pg_advisory_lock(8721453)"))
+        try:
+            already = conn.execute(text("select count(*) from authorities")).scalar_one()
+            if already:
+                return False
+            main(reset=False)
+            return True
+        finally:
+            conn.execute(text("select pg_advisory_unlock(8721453)"))
 
 
 if __name__ == "__main__":
