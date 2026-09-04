@@ -67,6 +67,16 @@ export function UpdatesPage() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [viewName, setViewName] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  // Cards read better for scanning and triage; the table stays one click away
+  // for the moments when someone needs to compare many records at once.
+  const [view, setView] = useState<"cards" | "table">(
+    () => (localStorage.getItem("artixio.updatesView") as "cards" | "table") ?? "cards",
+  );
+
+  const setViewMode = useCallback((next: "cards" | "table") => {
+    setView(next);
+    localStorage.setItem("artixio.updatesView", next);
+  }, []);
 
   useEffect(() => {
     if (incoming) {
@@ -271,6 +281,23 @@ export function UpdatesPage() {
 
             <div className="toolbar-spacer" />
 
+            <div className="viewtoggle" role="group" aria-label="View mode">
+              <button
+                className={view === "cards" ? "active" : ""}
+                aria-pressed={view === "cards"}
+                onClick={() => setViewMode("cards")}
+              >
+                <Icons.grid /> Cards
+              </button>
+              <button
+                className={view === "table" ? "active" : ""}
+                aria-pressed={view === "table"}
+                onClick={() => setViewMode("table")}
+              >
+                <Icons.rows /> Table
+              </button>
+            </div>
+
             <span className="small muted">
               {data ? `${data.total} records` : "…"}
             </span>
@@ -337,7 +364,7 @@ export function UpdatesPage() {
           )}
         </div>
 
-        <div className="tablewrap">
+        <div className={view === "cards" ? "cardwrap" : "tablewrap"}>
           {isError ? (
             <EmptyState
               title="Could not load updates"
@@ -350,6 +377,18 @@ export function UpdatesPage() {
               title="No records match these filters"
               body="Clear a filter or widen the search to see more."
             />
+          ) : view === "cards" ? (
+            <div className="cardgrid">
+              {rows.map((row) => (
+                <RecordCard
+                  key={row.id}
+                  row={row}
+                  selected={row.id === selectedId}
+                  onSelect={() => setSelectedId(row.id)}
+                  onOpen={() => navigate(`/updates/${row.id}`)}
+                />
+              ))}
+            </div>
           ) : (
             <table>
               <colgroup>
@@ -591,5 +630,118 @@ function UpdateRow({
         </button>
       </td>
     </tr>
+  );
+}
+
+/**
+ * Record card.
+ *
+ * Deliberately carries every field the table row does — authority, reference,
+ * title, summary, both dates, deadline, owner, triage state and validation —
+ * so switching to cards trades screen real estate for scannability, not
+ * information. A card that showed less would be decoration.
+ */
+function RecordCard({
+  row,
+  selected,
+  onSelect,
+  onOpen,
+}: {
+  row: Directive;
+  selected: boolean;
+  onSelect: () => void;
+  onOpen: () => void;
+}) {
+  const sev = row.flag_summary.max_severity;
+  const due = relativeDays(row.next_due_date);
+
+  return (
+    <article
+      className={`reccard${sev ? ` sev-${sev}` : ""}${selected ? " selected" : ""}`}
+      aria-selected={selected}
+      onClick={onSelect}
+      onDoubleClick={onOpen}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") onOpen();
+      }}
+    >
+      <div className="reccard-top">
+        <span className="pill neutral">{row.authority.code}</span>
+        <span className="mono reccard-ref" title={row.reference_code ?? "no reference code"}>
+          {row.reference_code ?? <span className="missing">no reference</span>}
+        </span>
+        <span className="toolbar-spacer" />
+        {sev ? (
+          <span className={`pill ${sev.toLowerCase()}`}>
+            <span className="led" />
+            {sev}
+          </span>
+        ) : (
+          <span className="pill success">
+            <span className="led" />
+            Clean
+          </span>
+        )}
+      </div>
+
+      <h3 className={isUntitled(row.title) ? "reccard-title untitled" : "reccard-title"}>
+        {row.title}
+      </h3>
+
+      {row.summary && <p className="reccard-summary">{row.summary}</p>}
+
+      <div className="reccard-meta">
+        <div>
+          <span className="reccard-k">Published</span>
+          <span className="reccard-v mono">
+            {row.published_date ?? <span className="missing">missing</span>}
+          </span>
+        </div>
+        <div>
+          <span className="reccard-k">Effective</span>
+          <span className="reccard-v mono">
+            {row.effective_date ?? <span className="missing">missing</span>}
+          </span>
+        </div>
+        <div>
+          <span className="reccard-k">Next due</span>
+          <span className={`reccard-v mono${row.overdue ? " overdue" : ""}`}>
+            {row.next_due_date ? (
+              <>
+                {row.next_due_date}
+                {due && <span className="cell-sub"> · {due}</span>}
+              </>
+            ) : (
+              <span className="faint">—</span>
+            )}
+          </span>
+        </div>
+      </div>
+
+      <div className="reccard-foot">
+        <Owner name={row.primary_owner} />
+        <span className="toolbar-spacer" />
+        <span className="reccard-items">
+          {row.open_item_count}/{row.action_items.length} open
+        </span>
+        <TriageStatusPill status={row.triage_status} />
+        <ValidationCell
+          critical={row.flag_summary.critical}
+          warning={row.flag_summary.warning}
+          info={row.flag_summary.info}
+          open={row.flag_summary.open}
+        />
+        <button
+          className="btn sm primary"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpen();
+          }}
+        >
+          Open
+        </button>
+      </div>
+    </article>
   );
 }

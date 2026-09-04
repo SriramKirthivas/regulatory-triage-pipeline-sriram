@@ -344,7 +344,7 @@ rather than only on reaching the Validation column.
 
 | Route | Screen | What it is for |
 |---|---|---|
-| `/updates` | Regulatory Updates | The triage queue — the primary surface |
+| `/updates` | Regulatory Updates | The triage queue — card view by default, dense table one click away |
 | `/updates/:id` | Update detail | One record: overview, action items, data quality, raw source |
 | `/authorities` | Authorities | Issuing bodies ranked by workload; drills through to a filtered queue |
 | `/directives` | Directives | The document library, tabbed by lifecycle state |

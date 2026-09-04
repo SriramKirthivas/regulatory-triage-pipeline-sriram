@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { Sidebar } from "./components/Sidebar";
+import { TopNav } from "./components/TopNav";
 import { ActionItemsPage } from "./pages/ActionItemsPage";
 import { ApiHealthPage } from "./pages/ApiHealthPage";
 import { AuthoritiesPage } from "./pages/AuthoritiesPage";
@@ -14,7 +14,7 @@ import { UpdatesPage } from "./pages/UpdatesPage";
 export default function App() {
   return (
     <div className="shell">
-      <Sidebar />
+      <TopNav />
       <div className="main">
         <Routes>
           <Route path="/" element={<Navigate to="/updates" replace />} />

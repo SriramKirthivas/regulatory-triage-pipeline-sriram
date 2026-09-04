@@ -204,6 +204,8 @@ export const Icons = {
   next: () => icon(<path d="m9 6 6 6-6 6" />),
   refresh: () => icon(<><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /></>),
   x: () => icon(<><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>),
+  grid: () => icon(<><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>),
+  rows: () => icon(<><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></>),
 };
 
 /* ------------------------------------------------------------------- modal */
