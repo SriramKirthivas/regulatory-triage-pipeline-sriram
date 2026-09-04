@@ -1,22 +1,20 @@
-# Render blueprint — provisions the Postgres instance and the API together.
+# Render blueprint — Postgres instance + the FastAPI service.
 #
 # Deploy: Render dashboard -> New -> Blueprint -> pick this repo.
-# Render reads this file, creates both services, and wires DATABASE_URL from the
-# database into the API automatically.
+# Render wires DATABASE_URL from the database into the service automatically.
 #
-# The database is created empty. On first boot the API creates the schema and
-# seeds it (SEED_ON_STARTUP), so there is no separate migration or seed step.
-# Seeding is idempotent — redeploys leave existing triage decisions alone.
-
-# REGIONS MUST MATCH between the database and the service.
+# REGIONS MUST MATCH between the database and the service. Render injects the
+# database's *internal* hostname (dpg-xxxxx-a, no domain suffix) and internal DNS
+# is per-region, so a service in one region cannot resolve a database in another.
+# It fails with "Name or service not known" on the first connection, during
+# startup. Omitting `region` does not inherit anything — it defaults to Oregon —
+# so both are pinned explicitly below.
 #
-# Render injects the database's *internal* hostname (dpg-xxxxx-a, with no domain
-# suffix). Internal DNS is per-region, so a service in one region cannot resolve
-# a database in another — it fails with "Name or service not known" at the first
-# connection, which happens during startup.
-#
-# Leaving `region` off a resource does not inherit it from the blueprint; it
-# defaults to Oregon. Both are pinned explicitly below so they cannot drift.
+# The database block matches the already-provisioned artixio-db (databaseName
+# `rtp`, user `rtp`, Frankfurt). Those are fixed at creation time and cannot be
+# changed by editing this file; they are reproduced here so the blueprint binds
+# to the existing instance instead of trying to create a mismatched one. The app
+# never reads them directly — it only sees the injected DATABASE_URL.
 
 databases:
   - name: artixio-db
@@ -28,25 +26,25 @@ databases:
 services:
   - type: web
     name: artixio-api
-    runtime: docker
-    rootDir: api
-    dockerfilePath: ./Dockerfile
+    runtime: python
     plan: free
     region: frankfurt
-    healthCheckPath: /health
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
     envVars:
-      # Render supplies postgres://…; config.py rewrites it to postgresql+psycopg://
-      # because SQLAlchemy 2 dropped the bare postgres:// alias.
+      - key: PYTHON_VERSION
+        value: "3.13.4"
+      # Render supplies postgresql://…; config.py rewrites the scheme to
+      # postgresql+psycopg:// because only psycopg 3 is in requirements.txt.
       - key: DATABASE_URL
         fromDatabase:
           name: artixio-db
           property: connectionString
-      - key: SEED_ON_STARTUP
-        value: "true"
-      # Only needed if the frontend calls this host directly (VITE_API_URL).
-      # With the Vercel rewrite in web/vercel.json every request is same-origin
-      # and CORS never comes into play, so this is a harmless default.
+      # The Vercel frontend proxies /api through its own origin, so CORS is not
+      # exercised in normal use. This only covers hitting the API directly.
       - key: CORS_ORIGINS
-        value: "*"
+        value: "https://regulatory-triage-pipeline-sriram.vercel.app"
       - key: PYTHONUNBUFFERED
         value: "1"

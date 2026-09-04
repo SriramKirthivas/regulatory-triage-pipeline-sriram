@@ -1,24 +1,9 @@
-# Python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-*.egg-info/
-.pytest_cache/
-.ruff_cache/
-
-# Node
-node_modules/
-dist/
-.vite/
-*.log
-
-# Env
+node_modules
+dist
 .env
-.env.local
-
-# OS / editor
+.venv
+__pycache__
+*.log
 .DS_Store
-.idea/
-.vscode/
-*.tsbuildinfo
+tsconfig.tsbuildinfo
+.vercel
