@@ -1,7 +1,17 @@
 # Loom script — 5 minutes
 
-Say it in your own words. *Italics* are what to do, not what to say.
+*Italics* are what to do, not what to say.
 Setup commands are at the bottom. Reseed before you record.
+
+About 740 spoken words — roughly 5:00 at a normal presenting pace. If you run
+long, cut these three, in order:
+
+1. "Others: a priority of zero…" — the extra defects (edge cases)
+2. "Unknown is also the one status…" (edge cases)
+3. The reference-codes half of "Two related decisions" (schema)
+
+Never cut the AI Workflow section — it's one of the three things the brief
+explicitly asks for.
 
 ---
 
@@ -9,12 +19,15 @@ Setup commands are at the bottom. Reseed before you record.
 
 *Overview page.*
 
-"This is a triage tool for a compliance officer. Eight regulators publish rules,
-and those rules turn into actual work — things someone has to do, with deadlines.
+"This is a triage tool for a regulatory compliance officer. Eight medicines
+regulators — the FDA, the EMA and so on — publish directives, the rules companies
+must follow. Each directive creates action items: the concrete tasks someone has
+to complete against a deadline.
 
-The catch is the data arrives messy: statuses spelled wrong, dates missing, HTML
-in the titles. So the app fixes what it safely can, sets aside what it can't, and
-hands back a ranked list. Right now, 44 rules, 184 tasks, 60 needing a human."
+The difficulty is that the incoming data is unreliable — misspelled status codes,
+missing dates, raw HTML in titles. The system corrects what it can verify,
+isolates what it can't, and returns a ranked queue. Currently 44 directives, 184
+action items, 60 needing review."
 
 ---
 
@@ -22,24 +35,25 @@ hands back a ranked list. Right now, 44 rules, 184 tasks, 60 needing a human."
 
 *`backend/app/models.py`.*
 
-"Three tables — a regulator issues rules, each rule creates tasks. Tasks hang
-off the rule rather than sitting in one flat to-do list, because how urgent a
-task is depends on who issued it and when it kicks in.
+"Three tables. An authority — a regulator — issues directives, and each directive
+generates action items. Action items belong to a directive rather than one flat
+task list, because an item's urgency depends on which regulator issued it and
+when the rule takes effect.
 
-The choice I'd most want to explain: **the status column is just text, not a
-fixed list of allowed values.**
+The decision I'd most like to explain: **the status column is stored as free
+text, rather than a fixed list of values enforced by the database.**
 
-Locking it down feels safer. But if the database only accepts four perfect values
-and the regulator sends `RESOLVD` with a typo, the import fails. Nobody learns
-the feed has a problem — you just get an error and no data. So I store exactly
-what they sent and clean it up on the way out. The database stays an honest
-record of what arrived; the app decides what it means. Anything we save back is
-clean.
+Constraining it looks safer. But if the database accepts only four exact values
+and a regulator sends `RESOLVD` with a typo, the import fails outright — and the
+officer never learns their data source has a problem. So the system stores what
+arrived and interprets it on the way out. The database stays an accurate record
+of what was sent; the application decides what it means. Anything written back is
+always correct.
 
-Two more like that. Reference codes aren't forced to be unique, because real
-registers do send the same code twice — worth flagging, not crashing over. And
-dates can be empty, because a default would mean inventing a compliance deadline.
-That's the most dangerous thing this could do."
+Two related decisions. Reference codes aren't unique, because registers do
+publish the same code twice — that's a finding, not a reason to reject the
+record. And dates may be empty, because a default would mean inventing a
+compliance deadline."
 
 ---
 
@@ -47,75 +61,78 @@ That's the most dangerous thing this could do."
 
 *Triage. Press `f` for flagged only.*
 
-"Let me show you what it catches. I planted fifteen kinds of bad data, and
-nothing tells the app what to look for. The rule is: never crash, never quietly
-accept something wrong, never throw a row away."
+"Now what it catches. I introduced fifteen categories of defect, and the system is
+never told what to look for — it evaluates every record as it reads it. The
+principle: never fail, never accept something incorrect silently, never discard a
+record."
 
 *Click item #4.*
 
-"This one came in as `IN_LIMBO`. That's not a misspelling of anything — I can't
-tell what they meant. So it's set aside and marked unknown. Not deleted, not
-guessed at, just parked where a person can fix it."
+"This item's status arrived as `IN_LIMBO`. That isn't a misspelling of any valid
+value, so there's no safe interpretation. It's isolated and marked unknown — not
+deleted, not guessed at, but held where a person can resolve it."
 
 *Press `2`.*
 
-"And unknown is the one state the app will never set itself. It only ever comes
-from bad input."
+"Unknown is also the one status the application never assigns itself; it only
+comes from incoming data."
 
 *Click #1.*
 
-"Compare that to `RESOLVD`. That obviously is 'resolved', misspelled — so it's
-fixed automatically, but you can still see what arrived. Things it can safely fix
-and things it can't are treated completely differently. That's the whole idea.
+"Compare that with `RESOLVD` — clearly 'resolved' misspelled, so it's corrected
+automatically, and the original value stays visible. Defects it can safely repair
+and defects it can't are handled differently, and that distinction is the core of
+the design. Others: a priority of zero brought into range, control characters
+stripped from a title, a due date in 2099 flagged rather than deleted."
 
-A few others: a priority of zero pulled back into range, junk characters stripped
-from a title, a due date in 2099 flagged rather than deleted."
+*Data quality → the withdrawn directive HC/PHA/2026/120.*
 
-*Data quality → the withdrawn rule HC/PHA/2026/120.*
-
-"My favourite. This rule was withdrawn — cancelled — but people are still
-working on tasks from it. Any single row looks completely fine. It's only wrong
-when you see them together, which is why the checking runs across the whole
-picture instead of row by row."
+"This is the case I'd highlight. The directive has been withdrawn, but it still
+has open action items against it. Every individual record is valid — the problem
+only appears when you view them together, which is why the checks run across the
+whole dataset rather than record by record."
 
 *`/docs` tab.*
 
-"Reading is forgiving; writing isn't. Save a misspelled status, it refuses. Mark
-something unknown, it refuses — that's only for bad data coming in. And you can't
-jump from Blocked straight to Resolved. Unblock it first."
+"Finally, reading is tolerant but writing is strict. A misspelled status is
+rejected. Unknown is rejected, because that state is reserved for incoming data.
+And an item can't move from Blocked straight to Resolved — it has to be unblocked
+first."
 
 ---
 
 ### 3:15 · The AI Workflow (70s)
 
-"For the page transitions the AI suggested a standard, straight-out-of-the-docs
-animation setup. Looked completely fine.
+"One example of something going wrong. For the page transitions, the AI
+recommended a standard animation pattern straight from the library's
+documentation. It looked correct.
 
-Then this bug: after you changed a task's status, the menu stopped working. You'd
-click, the address bar would change, the tab would highlight — and the page just
-sat there. Permanently, until you reloaded.
+The symptom: after changing an item's status, navigation stopped working.
+Clicking a menu link updated the address bar and the highlighted tab, but the
+page content stayed put — permanently, until a reload.
 
-That setting waits for the old page to finish fading out before showing the new
-one. So navigation quietly depended on an animation finishing. And the little
-confirmation popup disappears on a timer — navigate while it's still up, and the
-timer and the fade collide, the animation never reports back, and the page swap
-never happens. A popup only appears when you change a status, which is exactly
-why it only broke after you'd done some work.
+That pattern waits for the outgoing page to finish animating before displaying
+the next, so navigation had become dependent on an animation completing. The
+confirmation message shown after a status change is removed on a timer, and
+navigating while one was visible put the timer and the animation in conflict. The
+animation never signalled it had finished, so the page never changed. That
+message only appears when you change a status — which is exactly why the fault
+surfaced only after doing real work.
 
-I found it by scripting the browser to click through automatically. My first two
-guesses were wrong — it only showed up once I forced animations on, because
-headless had been skipping them.
+I found it by scripting a browser to reproduce the sequence. My first two
+hypotheses were wrong; it reproduced only once I forced animations to run,
+because the headless browser had been skipping them.
 
-The fix was removing that wrapper. The lesson: it was the recommended pattern,
-and it was quietly holding up something important. A visual effect should never
-be able to break navigation."
+The fix was removing that wrapper. The lesson: the recommended pattern carried a
+dependency its documentation doesn't emphasise. A visual transition should never
+be able to prevent navigation."
 
 ---
 
 ### 4:25 · Close (15s)
 
-"It's deployed as well — API and database on Render, frontend on Vercel. Thanks
-for watching."
+"It's deployed as well — the API and database on Render, the frontend on Vercel.
+Thank you for watching."
 
 ---
 
