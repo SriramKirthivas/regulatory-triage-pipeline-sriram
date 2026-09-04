@@ -47,7 +47,7 @@ export default function Overview() {
       <section className="hero">
         <div className="wrap">
           <div>
-            <Headline text="Regulatory noise, ranked into work." />
+            <Headline text="Directives checked. Action items ranked." />
             <motion.p className="lede" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55, duration: 0.5 }}>
               Directives from eight regulators arrive with typo status codes, missing dates and markup in titles. The pipeline repairs what it safely can, quarantines what it cannot, and hands your compliance officer a ranked list with every fault visible.
             </motion.p>
