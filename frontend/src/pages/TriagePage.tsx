@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DetailPanel } from "../components/DetailPanel";
 import { FilterBar } from "../components/FilterBar";
-import { ToastProvider, useToast } from "../components/Toast";
+import { useToast } from "../components/Toast";
 import { TriageTable } from "../components/TriageTable";
 import { ApiError, api, buildQuery } from "../lib/api";
 import type { ActionItem, Filters, Page, WritableStatus } from "../lib/types";
@@ -201,10 +201,7 @@ function Triage() {
   );
 }
 
+// ToastProvider is mounted at the app root, not here — see the comment in App.tsx.
 export default function TriagePage() {
-  return (
-    <ToastProvider>
-      <Triage />
-    </ToastProvider>
-  );
+  return <Triage />;
 }
